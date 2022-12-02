@@ -1,7 +1,7 @@
 use crate::utils;
 
 
-pub fn question_a_answer() -> i32 {
+pub fn result_a() -> i32 {
 
     let file_path = "inputs/day1.txt";
     let numbers = utils::file_name_to_i32_vec_allow_empty_lines(file_path);
@@ -22,7 +22,7 @@ pub fn question_a_answer() -> i32 {
     max_cal
 }
 
-pub fn question_b_answer() -> i32 {
+pub fn result_b() -> i32 {
 
     let file_path = "inputs/day1.txt";
     let numbers = utils::file_name_to_i32_vec_allow_empty_lines(file_path);
@@ -57,14 +57,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn question_a_is_correct() {
-        let answer = question_a_answer();
+    fn result_a_is_correct() {
+        let answer = result_a();
         assert_eq!(answer, 69310);
     }
 
     #[test]
-    fn question_b_is_correct() {
-        let answer = question_b_answer();
+    fn result_b_is_correct() {
+        let answer = result_b();
         assert_eq!(answer, 206104);
     }
 }

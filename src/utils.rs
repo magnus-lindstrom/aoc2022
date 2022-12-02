@@ -94,13 +94,13 @@ mod tests {
 
     #[test]
     fn file_name_to_i32_vec_test() {
-        let result: Vec<i32> = file_name_to_nr_vec("tests/numbers_on_rows.txt");
+        let result: Vec<i32> = file_name_to_nr_vec("tests/inputs/numbers_on_rows.txt");
         assert_eq!(result, vec![1,2,3]);
     }
 
     #[test]
     fn file_name_to_f32_vec_test() {
-        let result: Vec<f32> = file_name_to_nr_vec("tests/numbers_on_rows.txt");
+        let result: Vec<f32> = file_name_to_nr_vec("tests/inputs/numbers_on_rows.txt");
         assert_eq!(result, vec![1.,2.,3.]);
     }
 }

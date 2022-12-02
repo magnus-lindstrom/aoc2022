@@ -5,5 +5,5 @@ mod days;
 
 
 fn main() -> () {
-    println!("Hello, world");
+    println!("day 1 answer: {}", days::day1::result_a());
 }
