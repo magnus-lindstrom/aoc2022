@@ -15,7 +15,8 @@ pub fn vector_of_two_string_tuples_from_file(file_path: &str) -> Vec<(String, St
      * Assumes a file with two whitespace-separated strings on each line.
      */
 
-    let file_contents: String = fs::read_to_string(file_path).unwrap();
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
     let mut a: String;
     let mut b: String;
     let mut a_str: &str;
@@ -50,14 +51,15 @@ fn str_to_i32(s: &str) -> i32
     return s.parse().unwrap()
 }
 
-pub fn file_name_to_i32_vec_allow_empty_lines(file_name: &str) -> Vec<i32>
+pub fn file_path_to_i32_vec_allow_empty_lines(file_path: &str) -> Vec<i32>
 {
     /*
      Takes as input a file name which contains a number per row.
 
      Returns an i32 vector of those numbers.
      */
-    let file_contents = fs::read_to_string(file_name).unwrap();
+    let file_contents = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
     let numbers = file_contents
         .lines()
         .map(|s| str_to_i32(s))
@@ -66,7 +68,7 @@ pub fn file_name_to_i32_vec_allow_empty_lines(file_name: &str) -> Vec<i32>
     return numbers;
 }
 
-pub fn file_name_to_nr_vec<T>(file_name: &str) -> Vec<T>
+pub fn file_path_to_nr_vec<T>(file_path: &str) -> Vec<T>
 where
     T: FromStr,
     <T as FromStr>::Err: Debug,  // The error type of T's Err must be
@@ -77,9 +79,9 @@ where
      Returns a vector of those numbers.
 
      Specify data type on function call, e.g.:
-     let a: Vec<i32> = file_name_to_nr_vec(file_name);
+     let a: Vec<i32> = file_path_to_nr_vec(file_path);
      */
-    let file_contents = fs::read_to_string(file_name).unwrap();
+    let file_contents = fs::read_to_string(file_path).unwrap();
     let numbers: Vec<T> = file_contents
         .lines()
         .map(|s| s.parse().unwrap())
@@ -93,14 +95,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn file_name_to_i32_vec_test() {
-        let result: Vec<i32> = file_name_to_nr_vec("tests/inputs/numbers_on_rows.txt");
+    fn file_path_to_i32_vec_test() {
+        let result: Vec<i32> = file_path_to_nr_vec("tests/inputs/numbers_on_rows.txt");
         assert_eq!(result, vec![1,2,3]);
     }
 
     #[test]
-    fn file_name_to_f32_vec_test() {
-        let result: Vec<f32> = file_name_to_nr_vec("tests/inputs/numbers_on_rows.txt");
+    fn file_path_to_f32_vec_test() {
+        let result: Vec<f32> = file_path_to_nr_vec("tests/inputs/numbers_on_rows.txt");
         assert_eq!(result, vec![1.,2.,3.]);
     }
 }
