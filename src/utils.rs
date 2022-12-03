@@ -10,6 +10,21 @@ pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
 
+pub fn vector_of_strings_from_file(file_path: &str) -> Vec<String> {
+
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
+
+    let mut output: Vec<String> = Vec::new();
+    for line in file_contents.lines() {
+
+        output.push(line.to_string());
+
+    }
+    return output;
+
+}
+
 pub fn vector_of_two_string_tuples_from_file(file_path: &str) -> Vec<(String, String)> {
     /*
      * Assumes a file with two whitespace-separated strings on each line.
@@ -88,21 +103,4 @@ where
         .collect();
 
     return numbers;
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn file_path_to_i32_vec_test() {
-        let result: Vec<i32> = file_path_to_nr_vec("tests/inputs/numbers_on_rows.txt");
-        assert_eq!(result, vec![1,2,3]);
-    }
-
-    #[test]
-    fn file_path_to_f32_vec_test() {
-        let result: Vec<f32> = file_path_to_nr_vec("tests/inputs/numbers_on_rows.txt");
-        assert_eq!(result, vec![1.,2.,3.]);
-    }
 }
