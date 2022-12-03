@@ -3,9 +3,6 @@
 use std::fs;
 use std::str::FromStr;
 use std::fmt::Debug;
-use itertools::Itertools;
-
-
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
 }
@@ -25,39 +22,26 @@ pub fn vector_of_strings_from_file(file_path: &str) -> Vec<String> {
 
 }
 
-pub fn vector_of_two_string_tuples_from_file(file_path: &str) -> Vec<(String, String)> {
+pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
     /*
-     * Assumes a file with two whitespace-separated strings on each line.
+     * Assumes a file with whitespace-separated strings on each line.
      */
 
     let file_contents: String = fs::read_to_string(file_path)
         .expect(format!("Could not read file '{}'", file_path).as_str());
-    let mut a: String;
-    let mut b: String;
-    let mut a_str: &str;
-    let mut b_str: &str;
 
-    let mut output: Vec<(String, String)> = Vec::new();
+    let mut output: Vec<Vec<String>> = Vec::new();
+    let mut inner_vector: Vec<String>;
 
     for line in file_contents.lines() {
 
-        (a_str, b_str) = line.split_whitespace().collect_tuple().unwrap();
-        a = a_str.to_string();
-        b = b_str.to_string();
-        output.push((a, b));
+        inner_vector = Vec::new();
+        for substring in line.split_whitespace() {
+            inner_vector.push(substring.to_string());
+        }
+        output.push(inner_vector);
     }
     return output;
-
-    /*
-    let output: Vec<(String, String)> = file_contents
-        .lines()
-        .map(|s| s
-             .split_whitespace()
-             .collect_tuple()  // collects a maximum of 12 elements into a tuple
-             .unwrap()
-        ).collect();
-    return output;
-    */
 }
 
 fn str_to_nr<T>(s: &str) -> T

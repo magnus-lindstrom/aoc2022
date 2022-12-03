@@ -34,7 +34,7 @@ fn get_scores() -> (HashMap<RPSMove, i32>, HashMap<RPSResult, i32>) {
 fn result_a() -> Result<i32, &'static str> {
 
     let file_path = "inputs/day2.txt";
-    let all_rps_games = utils::vector_of_two_string_tuples_from_file(file_path);
+    let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();
 
     let move_dict: HashMap<String, RPSMove> = HashMap::from([
@@ -49,9 +49,9 @@ fn result_a() -> Result<i32, &'static str> {
     let mut my_move: RPSMove;
     let mut their_move: RPSMove;
     let mut my_score = 0;
-    for rps_game in all_rps_games.into_iter() {
-        my_move = move_dict[&rps_game.1];
-        their_move = move_dict[&rps_game.0];
+    for rps_game in all_rps_games {
+        my_move = move_dict[&rps_game[1]];
+        their_move = move_dict[&rps_game[0]];
 
         // add matchup score
         match my_move {
@@ -80,7 +80,7 @@ fn result_a() -> Result<i32, &'static str> {
 
 fn result_b() -> Result<i32, &'static str> {
     let file_path = "inputs/day2.txt";
-    let all_rps_games = utils::vector_of_two_string_tuples_from_file(file_path);
+    let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();
 
     let their_move_dict: HashMap<String, RPSMove> = HashMap::from([
@@ -100,8 +100,8 @@ fn result_b() -> Result<i32, &'static str> {
     let mut their_move: RPSMove;
     let mut my_score = 0;
     for rps_game in all_rps_games.into_iter() {
-        their_move = their_move_dict[&rps_game.0];
-        intended_result = intended_result_dict[&rps_game.1];
+        their_move = their_move_dict[&rps_game[0]];
+        intended_result = intended_result_dict[&rps_game[1]];
 
         // get my move
         match intended_result {
