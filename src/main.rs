@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 
-mod utils;
 mod days;
-
+mod utils;
 
 fn main() -> () {
     println!("day 3 answer a: {}", days::day3::result_a().unwrap());

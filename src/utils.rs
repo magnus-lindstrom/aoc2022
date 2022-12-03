@@ -1,9 +1,8 @@
 #![allow(dead_code)]
 
+use std::fmt::Debug;
 use std::fs;
 use std::str::FromStr;
-use std::fmt::Debug;
-
 
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
@@ -15,7 +14,9 @@ where
     // The error type of T's Err must be constrained. Needs to impl Debug
     <T as FromStr>::Err: Debug,
 {
-    if s.is_empty() { return "0".parse().unwrap() }
+    if s.is_empty() {
+        return "0".parse().unwrap();
+    }
     s.parse().unwrap()
 }
 
@@ -31,7 +32,6 @@ pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
     let mut inner_vector: Vec<String>;
 
     for line in file_contents.lines() {
-
         inner_vector = Vec::new();
         for substring in line.split_whitespace() {
             inner_vector.push(substring.to_string());
@@ -48,20 +48,17 @@ where
     <T as FromStr>::Err: Debug,
 {
     /*
-     Takes as input a file name which contains a number per row.
+    Takes as input a file name which contains a number per row.
 
-     Empty lines will be interpreted as a zero.
+    Empty lines will be interpreted as a zero.
 
-     Returns a vector of those numbers.
+    Returns a vector of those numbers.
 
-     Specify data type on function call, e.g.:
-     let a: Vec<i32> = file_path_to_nr_vec(file_path);
-     */
+    Specify data type on function call, e.g.:
+    let a: Vec<i32> = file_path_to_nr_vec(file_path);
+    */
     let file_contents = fs::read_to_string(file_path).unwrap();
-    let numbers: Vec<T> = file_contents
-        .lines()
-        .map(|s| str_to_nr(s))
-        .collect();
+    let numbers: Vec<T> = file_contents.lines().map(|s| str_to_nr(s)).collect();
 
     return numbers;
 }

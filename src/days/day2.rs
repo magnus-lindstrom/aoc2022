@@ -1,23 +1,21 @@
 use crate::utils;
 use std::collections::HashMap;
 
-
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 enum RPSResult {
     Win,
     Loss,
-    Draw
+    Draw,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum RPSMove {
     Rock,
     Paper,
-    Scissors
+    Scissors,
 }
 
 fn get_scores() -> (HashMap<RPSMove, i32>, HashMap<RPSResult, i32>) {
-
     let move_scores: HashMap<RPSMove, i32> = HashMap::from([
         (RPSMove::Rock, 1),
         (RPSMove::Paper, 2),
@@ -32,7 +30,6 @@ fn get_scores() -> (HashMap<RPSMove, i32>, HashMap<RPSResult, i32>) {
 }
 
 fn result_a() -> Result<i32, &'static str> {
-
     let file_path = "inputs/day2.txt";
     let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();
@@ -105,22 +102,18 @@ fn result_b() -> Result<i32, &'static str> {
 
         // get my move
         match intended_result {
-            RPSResult::Win => {
-                match their_move {
-                    RPSMove::Rock => my_move = RPSMove::Paper,
-                    RPSMove::Paper => my_move = RPSMove::Scissors,
-                    RPSMove::Scissors => my_move = RPSMove::Rock,
-                }
+            RPSResult::Win => match their_move {
+                RPSMove::Rock => my_move = RPSMove::Paper,
+                RPSMove::Paper => my_move = RPSMove::Scissors,
+                RPSMove::Scissors => my_move = RPSMove::Rock,
             },
             RPSResult::Draw => {
                 my_move = their_move;
-            },
-            RPSResult::Loss => {
-                match their_move {
-                    RPSMove::Rock => my_move = RPSMove::Scissors,
-                    RPSMove::Paper => my_move = RPSMove::Rock,
-                    RPSMove::Scissors => my_move = RPSMove::Paper,
-                }
+            }
+            RPSResult::Loss => match their_move {
+                RPSMove::Rock => my_move = RPSMove::Scissors,
+                RPSMove::Paper => my_move = RPSMove::Rock,
+                RPSMove::Scissors => my_move = RPSMove::Paper,
             },
         }
 

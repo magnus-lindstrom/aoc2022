@@ -1,8 +1,6 @@
 use crate::utils;
 
-
 pub fn result_a() -> Result<i32, &'static str> {
-
     let file_path = "inputs/day1.txt";
     let numbers: Vec<i32> = utils::nr_vec_from_file_allow_empty_lines(file_path);
 
@@ -15,15 +13,16 @@ pub fn result_a() -> Result<i32, &'static str> {
                 max_cal = tmp_cal_sum;
             }
             tmp_cal_sum = 0;
+        } else if *cal > 0 {
+            tmp_cal_sum += cal;
+        } else {
+            panic!("Calorie count smaller than 0: {}", cal);
         }
-        else if *cal > 0 { tmp_cal_sum += cal; }
-        else { panic!("Calorie count smaller than 0: {}", cal); }
     }
     Ok(max_cal)
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
-
     let file_path = "inputs/day1.txt";
     let numbers: Vec<i32> = utils::nr_vec_from_file_allow_empty_lines(file_path);
 
@@ -45,9 +44,11 @@ pub fn result_b() -> Result<i32, &'static str> {
                 third_highest_cal_sum = tmp_cal_sum;
             }
             tmp_cal_sum = 0;
+        } else if *cal > 0 {
+            tmp_cal_sum += cal;
+        } else {
+            panic!("Calorie count smaller than 0: {}", cal);
         }
-        else if *cal > 0 { tmp_cal_sum += cal; }
-        else { panic!("Calorie count smaller than 0: {}", cal); }
     }
     Ok(highest_cal_sum + second_highest_cal_sum + third_highest_cal_sum)
 }

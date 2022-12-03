@@ -1,17 +1,21 @@
-use std::fs;
 use std::collections::{HashMap, HashSet};
-
+use std::fs;
 
 fn get_priorities() -> HashMap<char, i32> {
     let mut item_priorities: HashMap<char, i32> = HashMap::new();
     // init prio here since the try_into complains when you add the result to an i32 directly
     let mut prio: i32;
-    for (priority, item_type) in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().enumerate() {
-        prio = priority.try_into().expect("Could not convert usize into i32");
+    for (priority, item_type) in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        .chars()
+        .enumerate()
+    {
+        prio = priority
+            .try_into()
+            .expect("Could not convert usize into i32");
         prio += 1;
         item_priorities.insert(item_type, prio);
     }
-    return item_priorities
+    return item_priorities;
 }
 
 pub fn result_a() -> Result<i32, &'static str> {
@@ -33,7 +37,7 @@ pub fn result_a() -> Result<i32, &'static str> {
     let mut half_of_line_len: usize;
     let mut item_types_in_left_compartment: HashSet<char>;
     for line in file_contents.lines() {
-        half_of_line_len = line.len()/2;
+        half_of_line_len = line.len() / 2;
         item_types_in_left_compartment = HashSet::new();
 
         for item_type in line[..half_of_line_len].chars() {
@@ -71,7 +75,8 @@ pub fn result_b() -> Result<i32, &'static str> {
     let mut common_items_in_all_rucksacks: HashSet<char> = HashSet::new();
     let mut group_member: i32 = 0;
     for rucksack in file_contents.lines() {
-        if group_member == 0 {  // all items belong in both sets
+        if group_member == 0 {
+            // all items belong in both sets
             for item_type in rucksack.chars() {
                 common_items_in_previous_rucksacks.insert(item_type);
                 common_items_in_all_rucksacks.insert(item_type);

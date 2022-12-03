@@ -1,11 +1,9 @@
 fn result_a() -> Result<i32, &'static str> {
-
     let _file_path = "inputs/dayX.txt";
     Ok(0)
 }
 
 fn result_b() -> Result<i32, &'static str> {
-
     let _file_path = "inputs/dayX.txt";
     Ok(0)
 }
