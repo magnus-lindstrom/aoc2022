@@ -60,36 +60,26 @@ pub fn vector_of_two_string_tuples_from_file(file_path: &str) -> Vec<(String, St
     */
 }
 
-fn str_to_i32(s: &str) -> i32
-{
-    if s.is_empty() { return 0 }
-    return s.parse().unwrap()
-}
-
-pub fn file_path_to_i32_vec_allow_empty_lines(file_path: &str) -> Vec<i32>
-{
-    /*
-     Takes as input a file name which contains a number per row.
-
-     Returns an i32 vector of those numbers.
-     */
-    let file_contents = fs::read_to_string(file_path)
-        .expect(format!("Could not read file '{}'", file_path).as_str());
-    let numbers = file_contents
-        .lines()
-        .map(|s| str_to_i32(s))
-        .collect();
-
-    return numbers;
-}
-
-pub fn file_path_to_nr_vec<T>(file_path: &str) -> Vec<T>
+fn str_to_nr<T>(s: &str) -> T
 where
     T: FromStr,
-    <T as FromStr>::Err: Debug,  // The error type of T's Err must be
-{                                // constrained. Needs to impl Debug
+    // The error type of T's Err must be constrained. Needs to impl Debug
+    <T as FromStr>::Err: Debug,
+{
+    if s.is_empty() { return "0".parse().unwrap() }
+    s.parse().unwrap()
+}
+
+pub fn file_path_to_nr_vec_allow_empty_lines<T>(file_path: &str) -> Vec<T>
+where
+    T: FromStr,
+    // The error type of T's Err must be constrained. Needs to impl Debug
+    <T as FromStr>::Err: Debug,
+{
     /*
      Takes as input a file name which contains a number per row.
+
+     Empty lines will be interpreted as a zero.
 
      Returns a vector of those numbers.
 
@@ -99,7 +89,7 @@ where
     let file_contents = fs::read_to_string(file_path).unwrap();
     let numbers: Vec<T> = file_contents
         .lines()
-        .map(|s| s.parse().unwrap())
+        .map(|s| str_to_nr(s))
         .collect();
 
     return numbers;
