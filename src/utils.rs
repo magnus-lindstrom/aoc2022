@@ -3,8 +3,20 @@
 use std::fs;
 use std::str::FromStr;
 use std::fmt::Debug;
+
+
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
+}
+
+fn str_to_nr<T>(s: &str) -> T
+where
+    T: FromStr,
+    // The error type of T's Err must be constrained. Needs to impl Debug
+    <T as FromStr>::Err: Debug,
+{
+    if s.is_empty() { return "0".parse().unwrap() }
+    s.parse().unwrap()
 }
 
 pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
@@ -29,17 +41,7 @@ pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
     return output;
 }
 
-fn str_to_nr<T>(s: &str) -> T
-where
-    T: FromStr,
-    // The error type of T's Err must be constrained. Needs to impl Debug
-    <T as FromStr>::Err: Debug,
-{
-    if s.is_empty() { return "0".parse().unwrap() }
-    s.parse().unwrap()
-}
-
-pub fn file_path_to_nr_vec_allow_empty_lines<T>(file_path: &str) -> Vec<T>
+pub fn nr_vec_from_file_allow_empty_lines<T>(file_path: &str) -> Vec<T>
 where
     T: FromStr,
     // The error type of T's Err must be constrained. Needs to impl Debug

@@ -4,7 +4,7 @@ use crate::utils;
 pub fn result_a() -> Result<i32, &'static str> {
 
     let file_path = "inputs/day1.txt";
-    let numbers: Vec<i32> = utils::file_path_to_nr_vec_allow_empty_lines(file_path);
+    let numbers: Vec<i32> = utils::nr_vec_from_file_allow_empty_lines(file_path);
 
     let mut max_cal = 0;
 
@@ -25,7 +25,7 @@ pub fn result_a() -> Result<i32, &'static str> {
 pub fn result_b() -> Result<i32, &'static str> {
 
     let file_path = "inputs/day1.txt";
-    let numbers: Vec<i32> = utils::file_path_to_nr_vec_allow_empty_lines(file_path);
+    let numbers: Vec<i32> = utils::nr_vec_from_file_allow_empty_lines(file_path);
 
     let mut highest_cal_sum = 0;
     let mut second_highest_cal_sum = 0;
