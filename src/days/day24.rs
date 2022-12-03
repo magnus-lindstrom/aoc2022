@@ -1,26 +1,28 @@
-fn result_a() -> Result<i32, &'static str> {
+pub fn result_a() -> Result<i32, &'static str> {
     let _file_path = "inputs/dayX.txt";
     Ok(0)
 }
 
-fn result_b() -> Result<i32, &'static str> {
+pub fn result_b() -> Result<i32, &'static str> {
     let _file_path = "inputs/dayX.txt";
     Ok(0)
 }
 
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // #[test]
+    #[test]
     fn result_a_is_correct() {
-        let answer = result_a();
-        assert_eq!(answer, Ok(14375));
+        let answer = result_a().unwrap();
+        assert_eq!(answer, 0);
     }
 
-    // #[test]
+    #[test]
     fn result_b_is_correct() {
-        let answer = result_b();
-        assert_eq!(answer, Ok(10274));
+        let answer = result_b().unwrap();
+        assert_eq!(answer, 0);
     }
 }
+*/

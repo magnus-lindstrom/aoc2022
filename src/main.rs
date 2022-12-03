@@ -1,6 +1,4 @@
-#![allow(dead_code)]
-
-mod days;
+pub mod days;
 mod utils;
 
 fn main() -> () {

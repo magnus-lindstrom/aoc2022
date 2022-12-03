@@ -29,7 +29,7 @@ fn get_scores() -> (HashMap<RPSMove, i32>, HashMap<RPSResult, i32>) {
     (move_scores, matchup_scores)
 }
 
-fn result_a() -> Result<i32, &'static str> {
+pub fn result_a() -> Result<i32, &'static str> {
     let file_path = "inputs/day2.txt";
     let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();
@@ -75,7 +75,7 @@ fn result_a() -> Result<i32, &'static str> {
     Ok(my_score)
 }
 
-fn result_b() -> Result<i32, &'static str> {
+pub fn result_b() -> Result<i32, &'static str> {
     let file_path = "inputs/day2.txt";
     let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();
