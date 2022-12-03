@@ -1,4 +1,4 @@
-use crate::utils;
+use std::fs;
 use std::collections::{HashMap, HashSet};
 
 
@@ -15,16 +15,24 @@ fn get_priorities() -> HashMap<char, i32> {
 }
 
 pub fn result_a() -> Result<i32, &'static str> {
+    /*
+     * Each line is a list of items in a single rucksack.
+     * Items are represented by chars
+     * Each line can be split in two halves: one left and one right
+     *
+     * Find the single char that exists in both halfs
+     */
 
     let file_path = "inputs/day3.txt";
-    let lines: Vec<String> = utils::vector_of_strings_from_file(file_path);
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
     let mut total_priority: i32 = 0;
 
     let item_priorities = get_priorities();
 
     let mut half_of_line_len: usize;
     let mut item_types_in_left_compartment: HashSet<char>;
-    for line in lines {
+    for line in file_contents.lines() {
         half_of_line_len = line.len()/2;
         item_types_in_left_compartment = HashSet::new();
 
@@ -45,9 +53,16 @@ pub fn result_a() -> Result<i32, &'static str> {
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
+    /*
+     * Same rucksacks as in a)
+     * Every group of 3 consecutive rucksacks make a triplet
+     *
+     * Find the single char that exists in all three rucksacks
+     */
 
     let file_path = "inputs/day3.txt";
-    let all_rucksacks: Vec<String> = utils::vector_of_strings_from_file(file_path);
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
     let mut total_priority: i32 = 0;
 
     let item_priorities = get_priorities();
@@ -55,7 +70,7 @@ pub fn result_b() -> Result<i32, &'static str> {
     let mut common_items_in_previous_rucksacks: HashSet<char> = HashSet::new();
     let mut common_items_in_all_rucksacks: HashSet<char> = HashSet::new();
     let mut group_member: i32 = 0;
-    for rucksack in all_rucksacks {
+    for rucksack in file_contents.lines() {
         if group_member == 0 {
             for item_type in rucksack.chars() {
                 common_items_in_previous_rucksacks.insert(item_type);
