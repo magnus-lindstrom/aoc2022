@@ -71,7 +71,7 @@ pub fn result_b() -> Result<i32, &'static str> {
     let mut common_items_in_all_rucksacks: HashSet<char> = HashSet::new();
     let mut group_member: i32 = 0;
     for rucksack in file_contents.lines() {
-        if group_member == 0 {
+        if group_member == 0 {  // all items belong in both sets
             for item_type in rucksack.chars() {
                 common_items_in_previous_rucksacks.insert(item_type);
                 common_items_in_all_rucksacks.insert(item_type);
