@@ -30,6 +30,25 @@ fn get_scores() -> (HashMap<RPSMove, i32>, HashMap<RPSResult, i32>) {
 }
 
 pub fn result_a() -> Result<i32, &'static str> {
+    /*
+     * Input is rows of 2 characters separated by a space.
+     * The characters represent rock, paper scissors moves.
+     * The right character is your move, the left one your opponents.
+     * X and A both refer to Rock.
+     * Y and B both refer to Paper.
+     * Z and C both refer to Scissors.
+     *
+     * A win gives you 6 points.
+     * A draw gives you 3 points.
+     * A loss gives you 1 points.
+     *
+     * If you play Rock, you also get 1 extra point.
+     * If you play Paper, you also get 2 extra points.
+     * If you play Scissors, you also get 3 extra points.
+     *
+     * Find out what your total score is after having played all the games.
+     */
+
     let file_path = "inputs/day2.txt";
     let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();
@@ -76,6 +95,30 @@ pub fn result_a() -> Result<i32, &'static str> {
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
+    /*
+     * Input is rows of 2 characters separated by a space.
+     * The first character represents a Rock, Paper, Scissors moves.
+     * The right character is how the game should end (for you).
+     *
+     * A refer to Rock.
+     * B refer to Paper.
+     * C refer to Scissors.
+     * X refer to a loss.
+     * Y refer to a draw.
+     * Z refer to a win.
+     *
+     * A win gives you 6 points.
+     * A draw gives you 3 points.
+     * A loss gives you 1 points.
+     *
+     * If you play Rock, you also get 1 extra point.
+     * If you play Paper, you also get 2 extra points.
+     * If you play Scissors, you also get 3 extra points.
+     *
+     * Find out what move you need to make in order to get the desired result of the game.
+     * The result is your total score after having played all the games.
+     */
+
     let file_path = "inputs/day2.txt";
     let all_rps_games = utils::vector_of_string_vectors_from_file(file_path);
     let (move_scores, matchup_scores) = get_scores();

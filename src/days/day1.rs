@@ -1,6 +1,12 @@
 use crate::utils;
 
 pub fn result_a() -> Result<i32, &'static str> {
+    /*
+     * Input has rows of numbers, where some rows are empty.
+     * Lines with consecutive numbers in them represent a sum.
+     * Find out what the biggest sum is.
+     */
+
     let file_path = "inputs/day1.txt";
     let numbers: Vec<i32> = utils::nr_vec_from_file_allow_empty_lines(file_path);
 
@@ -23,6 +29,12 @@ pub fn result_a() -> Result<i32, &'static str> {
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
+    /*
+     * Input has rows of numbers, where some rows are empty.
+     * Lines with consecutive numbers in them represent a sum.
+     * Find out what the sum of the three biggest sums are.
+     */
+
     let file_path = "inputs/day1.txt";
     let numbers: Vec<i32> = utils::nr_vec_from_file_allow_empty_lines(file_path);
 

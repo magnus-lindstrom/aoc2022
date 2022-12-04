@@ -20,6 +20,37 @@ where
     s.parse().unwrap()
 }
 
+pub fn file_path_plus_inner_sep_plus_outer_sep_to_vec_of_vec_of_vec_of_nr<T>(
+    file_path: &str,
+    inner_sep: &str,
+    outer_sep: &str,
+) -> Vec<Vec<Vec<T>>>
+where
+    T: FromStr,
+    // The error type of T's Err must be constrained. Needs to impl Debug
+    <T as FromStr>::Err: Debug,
+{
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
+    let mut outer_vec: Vec<Vec<Vec<T>>> = Vec::new();
+
+    for line in file_contents.lines() {
+        let mut middle_vec: Vec<Vec<T>> = Vec::new();
+        let after_first_split: Vec<&str> = line.split(outer_sep).collect();
+        for substring in after_first_split {
+            let after_second_split = substring.split(inner_sep);
+            let mut inner_vec: Vec<T> = Vec::new();
+            for subsubstring in after_second_split {
+                let nr: T = str_to_nr(subsubstring);
+                inner_vec.push(nr);
+            }
+            middle_vec.push(inner_vec);
+        }
+        outer_vec.push(middle_vec);
+    }
+    outer_vec
+}
+
 pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
     /*
      * Assumes a file with whitespace-separated strings on each line.

@@ -21,10 +21,10 @@ fn get_priorities() -> HashMap<char, i32> {
 pub fn result_a() -> Result<i32, &'static str> {
     /*
      * Each line is a list of items in a single rucksack.
-     * Items are represented by chars
-     * Each line can be split in two halves: one left and one right
+     * Items are represented by chars.
+     * Each line can be split in two halves: one left and one right.
      *
-     * Find the single char that exists in both halfs
+     * Find the single char that exists in both halfs.
      */
 
     let file_path = "inputs/day3.txt";
@@ -58,10 +58,10 @@ pub fn result_a() -> Result<i32, &'static str> {
 
 pub fn result_b() -> Result<i32, &'static str> {
     /*
-     * Same rucksacks as in a)
-     * Every group of 3 consecutive rucksacks make a triplet
+     * Same rucksacks as in a).
+     * Every group of 3 consecutive rucksacks make a triplet.
      *
-     * Find the single char that exists in all three rucksacks
+     * Find the single char that exists in all three rucksacks.
      */
 
     let file_path = "inputs/day3.txt";
