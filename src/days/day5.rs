@@ -3,14 +3,32 @@ use std::fs;
 const FILE_PATH: &str = "inputs/day5.txt";
 
 fn get_original_stacks() -> Vec<Vec<char>> {
+    /*
+     * The input file begins like this:
+     *
+     * [F]         [L]     [M]
+     * [T]     [H] [V] [G] [V]
+     * [N]     [T] [D] [R] [N]     [D]
+     * [Z]     [B] [C] [P] [B] [R] [Z]
+     * [M]     [J] [N] [M] [F] [M] [V] [H]
+     * [G] [J] [L] [J] [S] [C] [G] [M] [F]
+     * [H] [W] [V] [P] [W] [H] [H] [N] [N]
+     * [J] [V] [G] [B] [F] [G] [D] [H] [G]
+     *  1   2   3   4   5   6   7   8   9
+     *
+     * move 6 from 4 to 3
+     * move 5 from 8 to 9
+     * move 1 from 4 to 5
+     * ....
+     */
     let file_contents: String = fs::read_to_string(FILE_PATH)
         .expect(format!("Could not read file '{}'", FILE_PATH).as_str());
 
     let last_stack_line = 8;
     let nr_stacks = 9;
-    let chars_between_stack_objects = 4; // objects being the chars in the stacks
+    let chars_between_stack_objects = 4;
 
-    // The first element in each stack represents the bottom element
+    // The first element in each vector represents the bottom element in the corresponding stack
     let mut stacks: Vec<Vec<char>> = Vec::new();
     for _ in 0..nr_stacks {
         let stack: Vec<char> = Vec::new();
@@ -33,13 +51,6 @@ fn get_original_stacks() -> Vec<Vec<char>> {
         }
     }
     return stacks;
-}
-
-#[allow(dead_code)]
-fn print_stacks(stacks: &Vec<Vec<char>>) -> () {
-    for s in stacks {
-        println!("{:?}", s);
-    }
 }
 
 fn top_of_stacks(stacks: &Vec<Vec<char>>) -> String {
