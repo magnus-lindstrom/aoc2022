@@ -2,6 +2,6 @@ pub mod days;
 mod utils;
 
 fn main() -> () {
-    println!("day 5 answer a: {}", days::day5::result_a().unwrap());
-    println!("day 5 answer b: {}", days::day5::result_b().unwrap());
+    println!("day 6 answer a: {}", days::day6::result_a().unwrap());
+    println!("day 6 answer b: {}", days::day6::result_b().unwrap());
 }
