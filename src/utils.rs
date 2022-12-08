@@ -20,6 +20,25 @@ where
     s.parse().unwrap()
 }
 
+pub fn file_path_to_nr_matrix<T>(file_path: &str) -> Vec<Vec<T>>
+where
+    T: FromStr,
+    // The error type of T's Err must be constrained. Needs to impl Debug
+    <T as FromStr>::Err: Debug,
+{
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
+    let mut output: Vec<Vec<T>> = Vec::new();
+    for line in file_contents.lines() {
+        let mut row: Vec<T> = Vec::new();
+        for ch in line.chars() {
+            row.push(str_to_nr(&ch.to_string()));
+        }
+        output.push(row);
+    }
+    output
+}
+
 pub fn file_path_plus_inner_sep_plus_outer_sep_to_vec_of_vec_of_vec_of_nr<T>(
     file_path: &str,
     inner_sep: &str,
