@@ -70,6 +70,25 @@ where
     outer_vec
 }
 
+pub fn file_path_to_vec_of_char_nr_tuples<T>(file_path: &str) -> Vec<(char, T)>
+where
+    T: FromStr,
+    // The error type of T's Err must be constrained. Needs to impl Debug
+    <T as FromStr>::Err: Debug,
+{
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
+    let mut output: Vec<(char, T)> = Vec::new();
+    for line in file_contents.lines() {
+        let words: Vec<&str> = line.split_whitespace().collect();
+        let ch_vec: Vec<char> = words[0].chars().collect();
+        assert_eq!(ch_vec.len(), 1);
+        let ch: char = ch_vec[0];
+        let nr: T = str_to_nr(words[1]);
+        output.push((ch, nr));
+    }
+    output
+}
 pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
     /*
      * Assumes a file with whitespace-separated strings on each line.
