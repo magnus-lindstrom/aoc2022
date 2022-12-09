@@ -17,6 +17,29 @@ fn print_visible_forest(visible_forest: &HashSet<(usize, usize)>) -> () {
     }
 }
 
+fn get_visibility_hashmap() -> HashMap<(usize, usize), i32> {
+    let mut map: HashMap<(usize, usize), i32> = HashMap::new();
+    for i in 0..100 {
+        for j in 0..100 {
+            map.insert((i, j), 1);
+        }
+    }
+    map
+}
+
+fn get_max_visibility(visibility_matrix: HashMap<(usize, usize), i32>) -> i32 {
+    let mut max_visibility: i32 = 0;
+    for i in 0..100 {
+        for j in 0..100 {
+            let vis = visibility_matrix[&(i, j)];
+            if vis > max_visibility {
+                max_visibility = vis;
+            }
+        }
+    }
+    max_visibility
+}
+
 /// Rows are i, starting from the top of the forest with i = 0
 /// Columns are j, starting from the left side of the forest with j = 0
 pub fn result_a() -> Result<i32, &'static str> {
@@ -65,29 +88,6 @@ pub fn result_a() -> Result<i32, &'static str> {
     // print_visible_forest(&visible_forest);
     // println!("{:?}", forest[97]);
     Ok(visible_forest.len() as i32)
-}
-
-fn get_visibility_hashmap() -> HashMap<(usize, usize), i32> {
-    let mut map: HashMap<(usize, usize), i32> = HashMap::new();
-    for i in 0..100 {
-        for j in 0..100 {
-            map.insert((i, j), 1);
-        }
-    }
-    map
-}
-
-fn get_max_visibility(visibility_matrix: HashMap<(usize, usize), i32>) -> i32 {
-    let mut max_visibility: i32 = 0;
-    for i in 0..100 {
-        for j in 0..100 {
-            let vis = visibility_matrix[&(i, j)];
-            if vis > max_visibility {
-                max_visibility = vis;
-            }
-        }
-    }
-    max_visibility
 }
 
 pub fn result_b() -> Result<i32, &'static str> {

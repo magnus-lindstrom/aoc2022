@@ -41,8 +41,6 @@ fn solve_for_nr_knots(nr_knots: usize) -> Result<usize, &'static str> {
     have_been.insert((0, 0));
     // element 0 is the head
     let mut knot_positions: Vec<(i32, i32)> = vec![(0, 0); nr_knots];
-    // println!("{:?}", knot_positions);
-    // println!("{:?}", knot_positions.len());
 
     for rope_move in rope_moves.iter() {
         let move_dir = rope_move.0;
@@ -52,16 +50,17 @@ fn solve_for_nr_knots(nr_knots: usize) -> Result<usize, &'static str> {
             for i in 1..nr_knots {
                 knot_positions[i] = new_tail_pos(&knot_positions[i - 1], &knot_positions[i]);
             }
-            // println!("{:?}", knot_positions);
             have_been.insert(*knot_positions.last().unwrap());
         }
     }
     Ok(have_been.len())
 }
 
-/// Input is a list of moves of a "rope head".
-/// The "rope tail" will always take a step towards the head.
-/// Find out the number of unique positions that have been occupied by the tail.
+/// Simulate a rope with knots in a 2D grid, where the head (the knot at one end) moves and the following knots
+/// follow.
+/// If a knot is not among the 8 adjacent positions around the knot in front, it will move one step
+/// towards the head.
+/// If the offset is in both the x and y direction, the step taken will be diagonal.
 pub fn result_a() -> Result<usize, &'static str> {
     solve_for_nr_knots(2)
 }
