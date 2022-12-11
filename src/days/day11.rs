@@ -2,11 +2,10 @@ use crate::utils;
 use std::collections::VecDeque;
 
 const FILE_PATH: &str = "inputs/day11.txt";
-const TEST_FILE_PATH: &str = "inputs/day11_test.txt";
 
 #[derive(Debug)]
 struct Item {
-    worry_lvl: i32,
+    worry_lvl: i64,
 }
 
 #[derive(Debug)]
@@ -21,7 +20,7 @@ struct Monkey {
     items: VecDeque<Item>,
     operation: Operation,
     operation_number: String,
-    divisor: i32,
+    divisor: i64,
     true_target: usize,
     false_target: usize,
     inspections_carried_out: i32,
@@ -41,31 +40,29 @@ impl Monkey {
         }
     }
     fn add_item(&mut self, item: &str) -> () {
-        let worry_lvl: i32 = item
+        let worry_lvl: i64 = item
             .parse()
             .expect(format!("Could not parse {} as i32.", item).as_str());
         self.items.push_back(Item { worry_lvl });
     }
     fn inspect_item(&mut self, divide: bool) -> () {
-        let actual_operation_nr: i32 = match self.operation_number.as_str() {
+        let actual_operation_nr: i64 = match self.operation_number.as_str() {
             "old" => self.items[0].worry_lvl,
             _ => self.operation_number.parse().unwrap(),
         };
-        let would_be_result: i64;
         match self.operation {
             Operation::Addition => {
-                would_be_result = self.items[0].worry_lvl as i64 + actual_operation_nr as i64;
+                self.items[0].worry_lvl += actual_operation_nr;
             }
             Operation::Multiplication => {
-                would_be_result = self.items[0].worry_lvl as i64 * actual_operation_nr as i64;
+                self.items[0].worry_lvl *= actual_operation_nr;
             }
             Operation::Uninitialized => panic!("Uninitialized operation"),
         }
-        self.items[0].worry_lvl = would_be_result as i32;
         if divide {
             self.items[0].worry_lvl /= 3;
         } else {
-            self.items[0].worry_lvl = reduce_item_worry_lvl(would_be_result, self.reduction_nr);
+            self.items[0].worry_lvl = self.items[0].worry_lvl % self.reduction_nr;
         }
         self.inspections_carried_out += 1;
     }
@@ -80,13 +77,6 @@ impl Monkey {
         let item: Item = self.items.pop_front().expect("Nothing to pop");
         (item, target_monkey)
     }
-}
-
-fn reduce_item_worry_lvl(mut worry_lvl: i64, reduction_nr: i64) -> i32 {
-    while worry_lvl > reduction_nr {
-        worry_lvl -= reduction_nr;
-    }
-    worry_lvl as i32
 }
 
 fn get_monkey_business(monkeys: Vec<Monkey>) -> i64 {
@@ -136,7 +126,7 @@ fn get_monkeys(input: Vec<Vec<String>>) -> Vec<Monkey> {
                 .expect("Could not find last monkey in vector")
                 .operation_number = operation_number;
         } else if line[0] == "Test:".to_string() {
-            let divisor: i32 = line[3].parse().unwrap();
+            let divisor: i64 = line[3].parse().unwrap();
             monkeys
                 .last_mut()
                 .expect("Could not find last monkey in vector")
@@ -200,13 +190,8 @@ pub fn result_a() -> Result<i64, &'static str> {
 
 /// Running this function with the true input takes > 5min
 /// Test input takes < 1s
-pub fn result_b(use_test_input: bool) -> Result<i64, &'static str> {
-    let input: Vec<Vec<String>>;
-    if use_test_input {
-        input = utils::vector_of_string_vectors_from_file(TEST_FILE_PATH);
-    } else {
-        input = utils::vector_of_string_vectors_from_file(FILE_PATH);
-    }
+pub fn result_b() -> Result<i64, &'static str> {
+    let input: Vec<Vec<String>> = utils::vector_of_string_vectors_from_file(FILE_PATH);
     let nr_rounds: i32 = 10000;
     let mut monkeys: Vec<Monkey> = get_monkeys(input);
 
@@ -239,7 +224,7 @@ mod tests {
 
     #[test]
     fn result_b_is_correct() {
-        let answer = result_b(true).unwrap();
-        assert_eq!(answer, 2713310158);
+        let answer = result_b().unwrap();
+        assert_eq!(answer, 19309892877);
     }
 }
