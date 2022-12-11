@@ -9,3 +9,4 @@ rust-version = "1.63.0"
 [dependencies]
 itertools = "0.10.5"
 queue = "0.3.0"
+num-format = "0.4.4"
