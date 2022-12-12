@@ -20,6 +20,20 @@ where
     s.parse().unwrap()
 }
 
+pub fn file_path_to_vec_of_char_vecs(file_path: &str) -> Vec<Vec<char>> {
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
+    let mut output: Vec<Vec<char>> = Vec::new();
+    for line in file_contents.lines() {
+        let mut row: Vec<char> = Vec::new();
+        for ch in line.chars() {
+            row.push(ch);
+        }
+        output.push(row);
+    }
+    output
+}
+
 pub fn file_path_to_nr_matrix<T>(file_path: &str) -> Vec<Vec<T>>
 where
     T: FromStr,
