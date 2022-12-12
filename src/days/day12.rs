@@ -113,10 +113,7 @@ pub fn result_a() -> Result<i32, &'static str> {
         }
         let best_node_index: usize = get_best_node_index(&possible_steps);
         let new_position = possible_steps.remove(best_node_index);
-        // println!("{:?}", &possible_steps);
-        // println!("{:?}", &new_position);
         been_there.insert(new_position.position);
-        // println!("{:?}", new_position.position);
         positions_visited.push(new_position);
     }
     Err("ran out of iterations")
