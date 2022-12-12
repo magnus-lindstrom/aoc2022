@@ -3,25 +3,37 @@ use std::collections::HashMap;
 const FILE_PATH: &str = "inputs/day12.txt";
 const TEST_FILE_PATH: &str = "inputs/day12_test.txt";
 
-fn dist_to_end(from: (usize, usize), end: (usize, usize)) -> usize {
-    let mut dist: usize = 0;
-    dist += from.0.abs_diff(end.0);
-    dist += from.1.abs_diff(end.1);
+#[derive(Debug)]
+struct Position {
+    position: (i32, i32),
+    distance_from_start: i32,
+    distance_to_end: i32,
+}
+
+fn dist_to_end(x: (i32, i32), end: (i32, i32)) -> i32 {
+    let mut dist: i32 = 0;
+    dist += (x.0 + end.0).abs();
+    dist += (x.1 + end.1).abs();
     dist
 }
 
-fn get_best_node_so_far(distance_to_goal_map: &HashMap<(usize, usize), usize>) -> (usize, usize) {
-    *distance_to_goal_map
-        .iter()
-        .max_by(|a, b| a.1.cmp(&b.1))
-        .map(|(k, _v)| k)
-        .unwrap()
+fn get_best_node_index(possible_positions: &Vec<Position>) -> usize {
+    let mut best_index: Option<usize> = None;
+    let mut lowest_distance: i32 = std::i32::MAX;
+    for (i_position, position) in possible_positions.iter().enumerate() {
+        if position.distance_from_start + position.distance_to_end < lowest_distance {
+            lowest_distance = position.distance_from_start + position.distance_to_end;
+            best_index = Some(i_position);
+        }
+    }
+    best_index.unwrap()
 }
 
-pub fn result_a() -> Result<usize, &'static str> {
+pub fn result_a() -> Result<i32, &'static str> {
     let input = utils::file_path_to_vec_of_char_vecs(TEST_FILE_PATH);
 
-    let map_size: usize = input.len();
+    let map_size: i32 = input.len() as i32;
+    let max_height_diff: i32 = 1;
 
     let mut char_height_mapping: HashMap<char, i32> = HashMap::new();
     let mut i: i32 = 1;
@@ -32,53 +44,68 @@ pub fn result_a() -> Result<usize, &'static str> {
     char_height_mapping.insert('S', char_height_mapping[&'a']);
     char_height_mapping.insert('E', char_height_mapping[&'z']);
 
-    let mut start_init: Option<(usize, usize)> = None;
-    let mut end_init: Option<(usize, usize)> = None;
+    let mut start_init: Option<(i32, i32)> = None;
+    let mut end_init: Option<(i32, i32)> = None;
 
-    let mut height_map: HashMap<(usize, usize), i32> = HashMap::new();
+    let mut height_map: HashMap<(i32, i32), i32> = HashMap::new();
     for i_row in 0..input.len() {
         for j_col in 0..input[0].len() {
-            height_map.insert((i_row, j_col), char_height_mapping[&input[i_row][j_col]]);
+            height_map.insert(
+                (i_row as i32, j_col as i32),
+                char_height_mapping[&input[i_row][j_col]],
+            );
             if input[i_row][j_col] == 'S' {
-                start_init = Some((i_row, j_col));
+                start_init = Some((i_row as i32, j_col as i32));
             } else if input[i_row][j_col] == 'E' {
-                end_init = Some((i_row, j_col));
+                end_init = Some((i_row as i32, j_col as i32));
             }
         }
     }
-    let start: (usize, usize) = start_init.unwrap();
-    let end: (usize, usize) = end_init.unwrap();
+    let start: (i32, i32) = start_init.unwrap();
+    let end: (i32, i32) = end_init.unwrap();
 
-    let mut distance_to_goal_map: HashMap<(usize, usize), usize> = HashMap::new();
+    let mut possible_steps: Vec<Position> = Vec::new();
 
-    let current_node: (usize, usize) = start;
-    let current_distance: usize = 0;
+    let mut positions_visited: Vec<Position> = Vec::new();
+    positions_visited.push(Position {
+        position: start,
+        distance_from_start: 0,
+        distance_to_end: dist_to_end(start, end),
+    });
 
-    distance_to_goal_map.insert(
-        current_node,
-        current_distance + dist_to_end(current_node, end),
-    );
     let viable_steps: Vec<(i32, i32)> = vec![(0, -1), (0, 1), (-1, 0), (1, 0)];
 
-    for _ in 0..std::i32::MAX {
-        if distance_to_goal_map[&current_node] == 0 {
-            return Ok(current_distance);
+    for _ in 0..3 {
+        let current_position: &Position = positions_visited.last().unwrap();
+        if current_position.position == end {
+            return Ok(current_position.distance_from_start);
         }
 
         for step in viable_steps.iter() {
-            let node: (usize, usize) = (
-                current_node.0 + step.0 as usize,
-                current_node.1 + step.1 as usize,
+            let node: (i32, i32) = (
+                current_position.position.0 + step.0,
+                current_position.position.1 + step.1,
             );
-            if node.0 >= map_size || node.1 >= map_size {
+            if node.0 < 0 || node.1 < 0 || node.0 >= map_size || node.1 >= map_size {
                 continue;
             }
-            distance_to_goal_map.insert(node, current_distance + dist_to_end(current_node, end));
+            let distance: i32 = current_position.distance_from_start + 1;
+            // TODO: maybe being discarded due to height diff?
+            let height_diff: i32 = height_map[&node] - height_map[&current_position.position];
+            if height_diff > max_height_diff {
+                continue;
+            }
+            possible_steps.push(Position {
+                position: node,
+                distance_from_start: distance,
+                distance_to_end: dist_to_end(node, end),
+            });
         }
-        let best_node = get_best_node_so_far(&distance_to_goal_map);
-        if best_node == current_node {
-            return Err("Did not find the end");
-        }
+        let best_node_index: usize = get_best_node_index(&possible_steps);
+        let new_position = possible_steps.remove(best_node_index);
+        println!("{:?}", &possible_steps);
+        println!("{:?}", &new_position);
+        positions_visited.push(new_position);
     }
     Err("ran out of iterations")
 }
