@@ -32,6 +32,7 @@ fn get_best_node_index(possible_positions: &Vec<Position>) -> usize {
     best_index.unwrap()
 }
 
+/// A* algorithm
 pub fn result_a() -> Result<i32, &'static str> {
     let input = utils::file_path_to_vec_of_char_vecs(FILE_PATH);
 
@@ -119,11 +120,13 @@ pub fn result_a() -> Result<i32, &'static str> {
     Err("ran out of iterations")
 }
 
+/// Reverse the search direction here, from E to any a
+/// The heuristic falls off now, just set it to 0 to ignore that part (instead of rewriting)
 pub fn result_b() -> Result<i32, &'static str> {
     let mut input = utils::file_path_to_vec_of_char_vecs(FILE_PATH);
 
     let map_size: (i32, i32) = (input[0].len() as i32, input.len() as i32);
-    let max_height_diff: i32 = 1;
+    let max_height_diff: i32 = -1;
 
     let mut char_height_mapping: HashMap<char, i32> = HashMap::new();
     let mut i: i32 = 1;
@@ -131,103 +134,78 @@ pub fn result_b() -> Result<i32, &'static str> {
         char_height_mapping.insert(ch, i);
         i += 1;
     }
+    char_height_mapping.insert('S', char_height_mapping[&'a']);
     char_height_mapping.insert('E', char_height_mapping[&'z']);
 
-    let mut end_init: Option<(i32, i32)> = None;
+    let mut start_init: Option<(i32, i32)> = None;
 
     let mut height_map: HashMap<(i32, i32), i32> = HashMap::new();
     for y in 0..input.len() {
         for x in 0..input[0].len() {
-            if input[y][x] == 'S' {
-                input[y][x] = 'a';
-            }
             height_map.insert((x as i32, y as i32), char_height_mapping[&input[y][x]]);
             if input[y][x] == 'E' {
-                end_init = Some((x as i32, y as i32));
+                start_init = Some((x as i32, y as i32));
+            } else if input[y][x] == 'S' {
+                input[y][x] = 'a';
             }
         }
     }
-    let end: (i32, i32) = end_init.unwrap();
+    let start: (i32, i32) = start_init.unwrap();
 
-    let mut possible_starting_positions: Vec<(i32, i32)> = Vec::new();
-    for y in 0..input.len() {
-        for x in 0..input[0].len() {
-            if input[y][x] == 'a' {
-                possible_starting_positions.push((x as i32, y as i32));
-            }
+    let mut possible_steps: Vec<Position> = Vec::new();
+    let mut been_there: HashSet<(i32, i32)> = HashSet::new();
+    let mut is_in_possible_steps: HashSet<(i32, i32)> = HashSet::new();
+
+    let mut positions_visited: Vec<Position> = Vec::new();
+    positions_visited.push(Position {
+        position: start,
+        distance_from_start: 0,
+        distance_to_end: 0,
+    });
+    been_there.insert(start);
+
+    let viable_steps: Vec<(i32, i32)> = vec![(0, -1), (0, 1), (-1, 0), (1, 0)];
+
+    for _ in 0..std::i32::MAX {
+        let current_position: &Position = positions_visited.last().unwrap();
+        if input[current_position.position.1 as usize][current_position.position.0 as usize] == 'a'
+        {
+            return Ok(current_position.distance_from_start);
         }
-    }
 
-    let mut possible_starts_to_length_map: HashMap<(i32, i32), i32> = HashMap::new();
-    'outer_loop: for possible_starting_position in possible_starting_positions.into_iter() {
-        let start: (i32, i32) = possible_starting_position;
-
-        let mut possible_steps: Vec<Position> = Vec::new();
-        let mut been_there: HashSet<(i32, i32)> = HashSet::new();
-        let mut is_in_possible_steps: HashSet<(i32, i32)> = HashSet::new();
-
-        let mut positions_visited: Vec<Position> = Vec::new();
-        positions_visited.push(Position {
-            position: start,
-            distance_from_start: 0,
-            distance_to_end: dist_to_end(start, end),
-        });
-        been_there.insert(start);
-
-        let viable_steps: Vec<(i32, i32)> = vec![(0, -1), (0, 1), (-1, 0), (1, 0)];
-
-        for _ in 0..std::i32::MAX {
-            let current_position: &Position = positions_visited.last().unwrap();
-            if current_position.position == end {
-                possible_starts_to_length_map.insert(start, current_position.distance_from_start);
-                continue 'outer_loop;
+        for step in viable_steps.iter() {
+            let node: (i32, i32) = (
+                current_position.position.0 + step.0,
+                current_position.position.1 + step.1,
+            );
+            if been_there.contains(&node)
+                || is_in_possible_steps.contains(&node)
+                || node.0 < 0
+                || node.1 < 0
+                || node.0 >= map_size.0
+                || node.1 >= map_size.1
+            {
+                continue;
             }
-
-            for step in viable_steps.iter() {
-                let node: (i32, i32) = (
-                    current_position.position.0 + step.0,
-                    current_position.position.1 + step.1,
-                );
-                if been_there.contains(&node)
-                    || is_in_possible_steps.contains(&node)
-                    || node.0 < 0
-                    || node.1 < 0
-                    || node.0 >= map_size.0
-                    || node.1 >= map_size.1
-                {
-                    continue;
-                }
-                let height_diff: i32 = height_map[&node] - height_map[&current_position.position];
-                if height_diff > max_height_diff {
-                    continue;
-                }
-                let distance_from_start: i32 = current_position.distance_from_start + 1;
-                // TODO: maybe being discarded due to height diff?
-                possible_steps.push(Position {
-                    position: node,
-                    distance_from_start,
-                    distance_to_end: dist_to_end(node, end),
-                });
-                is_in_possible_steps.insert(node);
+            let height_diff: i32 = height_map[&node] - height_map[&current_position.position];
+            if height_diff < max_height_diff {
+                continue;
             }
-            if possible_steps.is_empty() {
-                continue 'outer_loop;
-            }
-            let best_node_index: usize = get_best_node_index(&possible_steps);
-            let new_position = possible_steps.remove(best_node_index);
-            been_there.insert(new_position.position);
-            positions_visited.push(new_position);
+            let distance_from_start: i32 = current_position.distance_from_start + 1;
+            // TODO: maybe being discarded due to height diff?
+            possible_steps.push(Position {
+                position: node,
+                distance_from_start,
+                distance_to_end: 0,
+            });
+            is_in_possible_steps.insert(node);
         }
-        return Err("ran out of iterations");
+        let best_node_index: usize = get_best_node_index(&possible_steps);
+        let new_position = possible_steps.remove(best_node_index);
+        been_there.insert(new_position.position);
+        positions_visited.push(new_position);
     }
-
-    let mut shortest_route: i32 = std::i32::MAX;
-    for dist in possible_starts_to_length_map.into_values() {
-        if dist < shortest_route {
-            shortest_route = dist;
-        }
-    }
-    Ok(shortest_route)
+    Err("ran out of iterations")
 }
 
 #[cfg(test)]
