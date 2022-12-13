@@ -20,6 +20,21 @@ where
     s.parse().unwrap()
 }
 
+/// assumes that lines come in pairs, separated by a blank line
+pub fn file_path_to_vec_of_vec_of_lines_separated_by_blanks(file_path: &str) -> Vec<Vec<String>> {
+    let mut output: Vec<Vec<String>> = Vec::new();
+    let mut inner_vec: Vec<String> = Vec::new();
+    for line in std::fs::read_to_string(file_path).unwrap().lines() {
+        if line == "" {
+            output.push(inner_vec);
+            inner_vec = Vec::new();
+        } else {
+            inner_vec.push(line.to_string());
+        }
+    }
+    output
+}
+
 pub fn file_path_to_vec_of_char_vecs(file_path: &str) -> Vec<Vec<char>> {
     let file_contents: String = fs::read_to_string(file_path)
         .expect(format!("Could not read file '{}'", file_path).as_str());

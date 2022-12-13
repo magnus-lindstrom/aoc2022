@@ -1,4 +1,3 @@
-// TODO: This can be made a lot faster. Takes 10s to run B.
 use crate::utils;
 use std::collections::{HashMap, HashSet};
 const FILE_PATH: &str = "inputs/day12.txt";
