@@ -69,49 +69,85 @@ impl Object {
     }
 }
 
-fn objects_in_right_order(left_object: &Object, right_object: &Object) -> Option<bool> {
+fn objects_in_right_order(left_object: &Object, right_object: &Object, depth: i32) -> Option<bool> {
+    println!("depth: {}", depth);
+    // println!(
+    // "receiving objects {:?}\nand\n{:?}",
+    // left_object, right_object
+    // );
     for i in 0..right_object.numbers.len() {
         if i >= left_object.numbers.len() {
+            println!("true because left list ran out of elements first");
             return Some(true);
         }
         let left_is_integer: bool = left_object.objects[i].is_none();
         let right_is_integer: bool = right_object.objects[i].is_none();
         if left_is_integer && right_is_integer {
             if left_object.numbers[i] < right_object.numbers[i] {
+                println!(
+                    "true because {} < {}",
+                    left_object.numbers[i].unwrap(),
+                    right_object.numbers[i].unwrap()
+                );
                 return Some(true);
             } else if left_object.numbers[i] > right_object.numbers[i] {
+                println!(
+                    "false because {} > {}",
+                    left_object.numbers[i].unwrap(),
+                    right_object.numbers[i].unwrap()
+                );
                 return Some(false);
             }
+            println!(
+                "None because {} == {}",
+                left_object.numbers[i].unwrap(),
+                right_object.numbers[i].unwrap()
+            );
         } else if !left_is_integer && !right_is_integer {
             let left_copy: &Object = left_object.objects[i].as_ref().unwrap();
             let right_copy: &Object = right_object.objects[i].as_ref().unwrap();
-            if objects_in_right_order(left_copy, right_copy) == Some(true) {
+            println!("both elements are objects, go deeper");
+            let new_objects_in_right_order =
+                objects_in_right_order(left_copy, right_copy, depth + 1);
+            if new_objects_in_right_order == Some(true) {
                 return Some(true);
-            } else if objects_in_right_order(left_copy, right_copy) == Some(false) {
+            } else if new_objects_in_right_order == Some(false) {
                 return Some(false);
             }
         } else if left_is_integer && !right_is_integer {
+            println!(
+                "converting left ({}) to object and going deeper",
+                left_object.numbers[i].unwrap()
+            );
             let nr: i32 = left_object.numbers[i].unwrap();
             let new_left_obj: Object = Object {
                 numbers: vec![Some(nr)],
                 objects: vec![None],
             };
             let right_copy: &Object = right_object.objects[i].as_ref().unwrap();
-            if objects_in_right_order(&new_left_obj, right_copy) == Some(true) {
+            let new_objects_in_right_order =
+                objects_in_right_order(&new_left_obj, right_copy, depth + 1);
+            if new_objects_in_right_order == Some(true) {
                 return Some(true);
-            } else if objects_in_right_order(&new_left_obj, right_copy) == Some(false) {
+            } else if new_objects_in_right_order == Some(false) {
                 return Some(false);
             }
         } else if !left_is_integer && right_is_integer {
+            println!(
+                "converting right ({}) to object and going deeper",
+                right_object.numbers[i].unwrap()
+            );
             let nr: i32 = right_object.numbers[i].unwrap();
             let new_right_obj: Object = Object {
                 numbers: vec![Some(nr)],
                 objects: vec![None],
             };
             let left_copy: &Object = left_object.objects[i].as_ref().unwrap();
-            if objects_in_right_order(left_copy, &new_right_obj) == Some(true) {
+            let new_objects_in_right_order =
+                objects_in_right_order(left_copy, &new_right_obj, depth + 1);
+            if new_objects_in_right_order == Some(true) {
                 return Some(true);
-            } else if objects_in_right_order(left_copy, &new_right_obj) == Some(false) {
+            } else if new_objects_in_right_order == Some(false) {
                 return Some(false);
             }
         } else {
@@ -119,6 +155,7 @@ fn objects_in_right_order(left_object: &Object, right_object: &Object) -> Option
         }
     }
     if right_object.numbers.len() < left_object.numbers.len() {
+        println!("false because right list ran out of elements first");
         return Some(false);
     }
     None
@@ -126,7 +163,6 @@ fn objects_in_right_order(left_object: &Object, right_object: &Object) -> Option
 
 pub fn result_a() -> Result<i32, &'static str> {
     let input = utils::file_path_to_vec_of_vec_of_lines_separated_by_blanks(FILE_PATH);
-    println!("{:?}", input);
     let mut object_pairs: Vec<(Object, Object)> = Vec::new();
     let mut sum_of_correct_indeces: i32 = 0;
     for i in 0..input.len() {
@@ -135,10 +171,13 @@ pub fn result_a() -> Result<i32, &'static str> {
         object_pairs.push((left_object, right_object));
     }
     for i in 0..object_pairs.len() {
-        if objects_in_right_order(&object_pairs[i].0, &object_pairs[i].1) == Some(true) {
-            //println!("pair {} is in right order", i + 1);
+        let right_order = objects_in_right_order(&object_pairs[i].0, &object_pairs[i].1, 0);
+        if right_order == Some(true) {
+            println!("pair {} is in right order\n", i + 1);
             sum_of_correct_indeces += i as i32 + 1;
-        } else if objects_in_right_order(&object_pairs[i].0, &object_pairs[i].1) == None {
+        } else if right_order == Some(false) {
+            println!("pair {} is in the wrong order\n", i + 1);
+        } else if right_order == None {
             println!("left object: {:?}", object_pairs[i].0);
             println!("right object: {:?}", object_pairs[i].1);
             panic!("Top objects should not be equal!");
