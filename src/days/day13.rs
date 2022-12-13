@@ -1,6 +1,7 @@
 use crate::utils;
 const FILE_PATH: &str = "inputs/day13.txt";
 //const FILE_PATH: &str = "inputs/day13_test.txt";
+//const FILE_PATH: &str = "inputs/day13_scratch.txt";
 
 #[derive(Debug, Clone)]
 struct Object {
