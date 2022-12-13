@@ -1,8 +1,8 @@
 use crate::utils;
-//const FILE_PATH: &str = "inputs/day13.txt";
-const FILE_PATH: &str = "inputs/day13_test.txt";
+const FILE_PATH: &str = "inputs/day13.txt";
+//const FILE_PATH: &str = "inputs/day13_test.txt";
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Object {
     numbers: Vec<Option<i32>>,
     objects: Vec<Option<Object>>,
@@ -69,16 +69,83 @@ impl Object {
     }
 }
 
+fn objects_in_right_order(left_object: &Object, right_object: &Object) -> Option<bool> {
+    for i in 0..right_object.numbers.len() {
+        if i >= left_object.numbers.len() {
+            return Some(true);
+        }
+        let left_is_integer: bool = left_object.objects[i].is_none();
+        let right_is_integer: bool = right_object.objects[i].is_none();
+        if left_is_integer && right_is_integer {
+            if left_object.numbers[i] < right_object.numbers[i] {
+                return Some(true);
+            } else if left_object.numbers[i] > right_object.numbers[i] {
+                return Some(false);
+            }
+        } else if !left_is_integer && !right_is_integer {
+            let left_copy: &Object = left_object.objects[i].as_ref().unwrap();
+            let right_copy: &Object = right_object.objects[i].as_ref().unwrap();
+            if objects_in_right_order(left_copy, right_copy) == Some(true) {
+                return Some(true);
+            } else if objects_in_right_order(left_copy, right_copy) == Some(false) {
+                return Some(false);
+            }
+        } else if left_is_integer && !right_is_integer {
+            let nr: i32 = left_object.numbers[i].unwrap();
+            let new_left_obj: Object = Object {
+                numbers: vec![Some(nr)],
+                objects: vec![None],
+            };
+            let right_copy: &Object = right_object.objects[i].as_ref().unwrap();
+            if objects_in_right_order(&new_left_obj, right_copy) == Some(true) {
+                return Some(true);
+            } else if objects_in_right_order(&new_left_obj, right_copy) == Some(false) {
+                return Some(false);
+            }
+        } else if !left_is_integer && right_is_integer {
+            let nr: i32 = right_object.numbers[i].unwrap();
+            let new_right_obj: Object = Object {
+                numbers: vec![Some(nr)],
+                objects: vec![None],
+            };
+            let left_copy: &Object = left_object.objects[i].as_ref().unwrap();
+            if objects_in_right_order(left_copy, &new_right_obj) == Some(true) {
+                return Some(true);
+            } else if objects_in_right_order(left_copy, &new_right_obj) == Some(false) {
+                return Some(false);
+            }
+        } else {
+            panic!("{}", format!("panic at i = {}", i));
+        }
+    }
+    if right_object.numbers.len() < left_object.numbers.len() {
+        return Some(false);
+    }
+    None
+}
+
 pub fn result_a() -> Result<i32, &'static str> {
     let input = utils::file_path_to_vec_of_vec_of_lines_separated_by_blanks(FILE_PATH);
     println!("{:?}", input);
+    let mut object_pairs: Vec<(Object, Object)> = Vec::new();
+    let mut sum_of_correct_indeces: i32 = 0;
     for i in 0..input.len() {
         let left_object: Object = Object::new(input[i][0].clone());
         let right_object: Object = Object::new(input[i][1].clone());
-        println!("{:?}", left_object);
-        println!("{:?}\n", right_object);
+        object_pairs.push((left_object, right_object));
     }
-    Ok(0)
+    for i in 0..object_pairs.len() {
+        if objects_in_right_order(&object_pairs[i].0, &object_pairs[i].1) == Some(true) {
+            //println!("pair {} is in right order", i + 1);
+            sum_of_correct_indeces += i as i32 + 1;
+        } else if objects_in_right_order(&object_pairs[i].0, &object_pairs[i].1) == None {
+            println!("left object: {:?}", object_pairs[i].0);
+            println!("right object: {:?}", object_pairs[i].1);
+            panic!("Top objects should not be equal!");
+        }
+    }
+
+    Ok(sum_of_correct_indeces)
 }
 
 pub fn result_b() -> Result<i32, &'static str> {

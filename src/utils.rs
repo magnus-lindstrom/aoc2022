@@ -32,6 +32,7 @@ pub fn file_path_to_vec_of_vec_of_lines_separated_by_blanks(file_path: &str) -> 
             inner_vec.push(line.to_string());
         }
     }
+    output.push(inner_vec); // also add last two lines (assuming file does not end with blank line)
     output
 }
 
