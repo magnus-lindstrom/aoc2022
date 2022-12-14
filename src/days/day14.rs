@@ -1,5 +1,8 @@
+use crossterm::{cursor, terminal, ExecutableCommand, QueueableCommand};
 use std::collections::HashMap;
 use std::fs;
+use std::io::{stdout, Write};
+use std::{thread, time};
 
 const FILE_PATH: &str = "inputs/day14.txt";
 //const FILE_PATH: &str = "inputs/day14_test.txt";
@@ -60,7 +63,7 @@ fn draw_cave(
     maxx: i32,
     miny: i32,
     maxy: i32,
-) -> () {
+    ) -> () {
     for y in miny..=maxy {
         println!("");
         for x in minx..=maxx {
@@ -76,6 +79,48 @@ fn draw_cave(
         }
     }
     println!("");
+}
+
+struct Drawer {
+    stdout: std::io::Stdout,
+}
+impl Drawer {
+    fn new() -> Drawer {
+        let mut stdout: std::io::Stdout = stdout();
+        stdout.queue(cursor::SavePosition).unwrap();
+        Drawer { stdout }
+    }
+    fn draw
+        fn clear(mut self) -> () {
+            self.stdout
+                .queue(terminal::Clear(terminal::ClearType::FromCursorDown))
+                .unwrap();
+        }
+}
+
+fn draw(mut stdout: &std::io::Stdout) -> () {
+    stdout.execute(cursor::Hide).unwrap();
+    for i in (1..30).rev() {
+        stdout
+            .write_all(format!("{}: FOOBAR ", i).as_bytes())
+            .unwrap();
+        stdout.queue(cursor::RestorePosition).unwrap();
+        stdout.flush().unwrap();
+        thread::sleep(time::Duration::from_millis(100));
+
+        stdout
+            .queue(terminal::Clear(terminal::ClearType::FromCursorDown))
+            .unwrap();
+    }
+    stdout.execute(cursor::Show).unwrap();
+}
+
+pub fn just_draw() -> () {
+    let mut stdout = stdout();
+    stdout.queue(cursor::SavePosition).unwrap();
+    draw(&stdout);
+    println!("hiiiiii");
+    draw(&stdout);
 }
 
 #[derive(PartialEq)]

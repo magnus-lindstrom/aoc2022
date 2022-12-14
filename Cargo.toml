@@ -7,6 +7,7 @@ rust-version = "1.63.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+crossterm = "0.25.0"
 itertools = "0.10.5"
-queue = "0.3.0"
 num-format = "0.4.4"
+queue = "0.3.0"
