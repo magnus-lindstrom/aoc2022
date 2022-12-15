@@ -1,4 +1,4 @@
-use crossterm::{cursor, terminal, ExecutableCommand, QueueableCommand};
+use crossterm::{cursor, terminal, QueueableCommand};
 use std::collections::HashMap;
 use std::fs;
 use std::io::{stdout, Write};
@@ -184,7 +184,7 @@ pub fn result_a() -> Result<i32, &'static str> {
 
 pub fn result_b() -> Result<i32, &'static str> {
     let input = read_input(FILE_PATH);
-    let (minx, maxx, miny, mut maxy) = get_cave_slice_bounds(&input);
+    let (_minx, _maxx, _miny, mut maxy) = get_cave_slice_bounds(&input);
     maxy += 2;
     let hole: (i32, i32) = (500, 0);
     let mut cave_matter: HashMap<(i32, i32), Matter> = HashMap::new();
