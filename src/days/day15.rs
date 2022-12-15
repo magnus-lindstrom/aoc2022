@@ -47,50 +47,13 @@ fn in_area_of_any_sensor(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) 
     false
 }
 
-/// returns negative number if point is not inside sensor area
-fn max_dist_to_end_of_sensor_area(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) -> i32 {
-    let mut max_dist = std::i32::MIN;
-    for sensor in sensors.keys().into_iter() {
-        let dist_to_sensor = manhattan_dist(point, *sensor);
-        let sensor_to_beacon_dist = sensors[sensor];
-        let dist_diff = sensor_to_beacon_dist - dist_to_sensor;
-        // println!("sensor is at {},{}", sensor.0, sensor.1);
-        // println!("beacon is {} dist away", sensors[sensor]);
-        // println!("point is {} dist away from sensor", dist_to_sensor);
-        // println!("should be {} from sensor area edge", dist_diff);
-        if dist_diff as i32 > max_dist {
-            max_dist = dist_diff as i32;
-        }
-    }
-    // println!("returning {}", max_dist);
-    max_dist
-}
-
-/*
-fn dist_to_closest_sensor(point: (i32, i32), sensors: &HashMap<(i32, i32), i32>) -> u32 {
-let mut closest: u32 = std::u32::MAX;
-for sensor in sensors.keys().into_iter() {
-let dist = manhattan_dist(point, *sensor);
-if dist < closest {
-closest = dist;
-}
-}
-closest
-}
-*/
-
 fn dist_to_closest_sensor_area(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) -> u32 {
     let mut closest: u32 = std::u32::MAX;
     for sensor in sensors.keys().into_iter() {
         let dist_to_sensor = manhattan_dist(point, *sensor);
         let dist_to_area = dist_to_sensor - sensors[sensor];
         if dist_to_area < closest {
-            // println!("closest was {}", closest);
-            // println!("closest is now {}", dist_to_area);
             closest = dist_to_area;
-            // println!("dist to sensor: {}", dist_to_sensor);
-            // println!("dist to area: {}", dist_to_area);
-            // println!("closest was: {}", closest);
         }
     }
     closest
@@ -120,7 +83,7 @@ fn get_max_leap_length(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) ->
 
         let sensor_is_to_the_right = sensor.0 >= point.0;
         if sensor_is_to_the_right {
-            leap_len += dist_to_sensor + 1; // +1 to accound for the sensor in the middle
+            leap_len += 2 * (sensor.0 - point.0) as u32;
         }
 
         if leap_len > max_leap_len {
@@ -163,7 +126,6 @@ pub fn result_a() -> Result<i32, &'static str> {
     let mut nr_spots_that_cant_be_beacon = 0;
     let mut x = std::i32::MIN;
     while x < std::i32::MAX {
-        // println!("x: {}", x);
         if in_area_of_any_sensor((x, y), &sensors) && !beacons.contains(&(x, y)) {
             let steps_to_get_out_of_area = get_max_leap_length((x, y), &sensors) as i32;
             nr_spots_that_cant_be_beacon += steps_to_get_out_of_area;
@@ -193,7 +155,7 @@ pub fn result_a() -> Result<i32, &'static str> {
 }
 
 pub fn result_b() -> Result<i64, &'static str> {
-    let mode = "test";
+    let mode = "real";
     let file_path: &str;
     let xmin: i32;
     let ymin: i32;
@@ -208,21 +170,16 @@ pub fn result_b() -> Result<i64, &'static str> {
     } else {
         panic!("invalid mode");
     }
-    let (sensors, _beacons) = get_input(file_path);
+    let (sensors, _) = get_input(file_path);
     let mut y = ymin;
     while y < ymax {
         let mut x = xmin;
         while x < xmax {
             if !in_area_of_any_sensor((x, y), &sensors) {
-                println!("not in any sensor area at {},{}", x, y);
                 let prod: i64 = x as i64 * 4000000 + y as i64;
                 return Ok(prod);
             }
             let steps_to_get_out_of_area = get_max_leap_length((x, y), &sensors) as i32;
-            println!(
-                "taking {} steps to get out of area at {},{}",
-                steps_to_get_out_of_area, x, y
-            );
             x += steps_to_get_out_of_area;
         }
         y += 1;
