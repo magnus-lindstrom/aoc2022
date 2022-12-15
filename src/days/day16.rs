@@ -24,10 +24,13 @@ pub fn result_a() -> Result<i32, &'static str> {
         termion::clear::All,
         termion::cursor::Goto(1, 1)
     );
+    stdout.flush().unwrap();
     std::thread::sleep(std::time::Duration::from_millis(1000));
     print!("{}{}foo", termion::clear::All, termion::cursor::Goto(1, 1));
+    stdout.flush().unwrap();
     std::thread::sleep(std::time::Duration::from_millis(1000));
     print!("{}{}bar", termion::clear::All, termion::cursor::Goto(1, 1));
+    stdout.flush().unwrap();
     Ok(0)
 }
 

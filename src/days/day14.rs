@@ -1,3 +1,4 @@
+use crate::utils;
 use std::collections::HashMap;
 use std::fs;
 
@@ -54,28 +55,32 @@ fn get_cave_slice_bounds(input: &Vec<Vec<(i32, i32)>>) -> (i32, i32, i32, i32) {
     (minx, maxx, 0, maxy)
 }
 
+#[allow(dead_code)]
 fn draw_cave(
     cave_matter: &HashMap<(i32, i32), Matter>,
     minx: i32,
     maxx: i32,
     miny: i32,
     maxy: i32,
+    sleep: u64,
 ) -> () {
+    let mut string: String = "".to_string();
     for y in miny..=maxy {
-        println!("");
         for x in minx..=maxx {
             if !cave_matter.contains_key(&(x, y)) {
-                print!(".");
+                string.push_str(".");
             } else if cave_matter[&(x, y)] == Matter::Rock {
-                print!("#");
+                string.push_str("#");
             } else if cave_matter[&(x, y)] == Matter::Sand {
-                print!("o");
+                string.push_str("o");
             } else if cave_matter[&(x, y)] == Matter::Hole {
-                print!("+");
+                string.push_str("+");
             }
         }
+        string.push_str("\n");
     }
-    println!("");
+    string.push_str("\n");
+    utils::draw_and_sleep_ms(&string, sleep);
 }
 
 #[derive(PartialEq)]
@@ -87,6 +92,8 @@ enum Matter {
 
 pub fn result_a() -> Result<i32, &'static str> {
     let input = read_input(FILE_PATH);
+    let print_sleep: u64 = 20;
+    let print_output = false;
     let (minx, maxx, miny, maxy) = get_cave_slice_bounds(&input);
     let hole: (i32, i32) = (500, 0);
     let mut cave_matter: HashMap<(i32, i32), Matter> = HashMap::new();
@@ -112,7 +119,9 @@ pub fn result_a() -> Result<i32, &'static str> {
             cave_matter.insert(hole, Matter::Hole);
         }
     }
-    draw_cave(&cave_matter, minx, maxx, miny, maxy);
+    if print_output {
+        draw_cave(&cave_matter, minx, maxx, miny, maxy, print_sleep);
+    }
     for i_sand_tile in 0..std::i32::MAX {
         let mut tile_pos: (i32, i32) = hole;
         for _ in 0..std::i32::MAX {
@@ -121,26 +130,26 @@ pub fn result_a() -> Result<i32, &'static str> {
             }
             if !cave_matter.contains_key(&(tile_pos.0, tile_pos.1 + 1)) {
                 tile_pos = (tile_pos.0, tile_pos.1 + 1);
-                continue;
             } else if !cave_matter.contains_key(&(tile_pos.0 - 1, tile_pos.1 + 1)) {
                 tile_pos = (tile_pos.0 - 1, tile_pos.1 + 1);
-                continue;
             } else if !cave_matter.contains_key(&(tile_pos.0 + 1, tile_pos.1 + 1)) {
                 tile_pos = (tile_pos.0 + 1, tile_pos.1 + 1);
-                continue;
             } else {
                 cave_matter.insert(tile_pos, Matter::Sand);
                 break;
             }
+            if print_output {
+                draw_cave(&cave_matter, minx, maxx, miny, maxy, print_sleep);
+            }
+            continue;
         }
-        // draw_cave(&cave_matter, minx, maxx, miny, maxy);
     }
     Err("ran to the end")
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
     let input = read_input(FILE_PATH);
-    let (minx, maxx, miny, mut maxy) = get_cave_slice_bounds(&input);
+    let (_, _, _, mut maxy) = get_cave_slice_bounds(&input);
     maxy += 2;
     let hole: (i32, i32) = (500, 0);
     let mut cave_matter: HashMap<(i32, i32), Matter> = HashMap::new();
@@ -166,7 +175,6 @@ pub fn result_b() -> Result<i32, &'static str> {
             cave_matter.insert(hole, Matter::Hole);
         }
     }
-    draw_cave(&cave_matter, minx, maxx, miny, maxy);
     for i_sand_tile in 1..std::i32::MAX {
         let mut tile_pos: (i32, i32) = hole;
         for _ in 0..std::i32::MAX {
@@ -190,28 +198,23 @@ pub fn result_b() -> Result<i32, &'static str> {
                 break;
             }
         }
-        // if i_sand_tile % 1 == 0 {
-        // draw_cave(&cave_matter, minx - 10, maxx + 10, miny, maxy);
-        // }
     }
     Ok(0)
 }
 
-/*
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
 
-#[test]
-fn result_a_is_correct() {
-let answer = result_a().unwrap();
-assert_eq!(answer, 0);
-}
+    #[test]
+    fn result_a_is_correct() {
+        let answer = result_a().unwrap();
+        assert_eq!(answer, 805);
+    }
 
-#[test]
-fn result_b_is_correct() {
-let answer = result_b().unwrap();
-assert_eq!(answer, 0);
+    #[test]
+    fn result_b_is_correct() {
+        let answer = result_b().unwrap();
+        assert_eq!(answer, 25161);
+    }
 }
-}
-*/

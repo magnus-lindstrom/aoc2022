@@ -1,8 +1,23 @@
 #![allow(dead_code)]
+extern crate termion;
+
+use std::io::{stdout, Write};
 
 use std::fmt::Debug;
 use std::fs;
 use std::str::FromStr;
+
+pub fn draw_and_sleep_ms(string: &str, sleep_time: u64) -> () {
+    let mut stdout = stdout();
+    print!(
+        "{}{}{}",
+        termion::clear::All,
+        termion::cursor::Goto(1, 1),
+        string
+    );
+    stdout.flush().unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(sleep_time));
+}
 
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())
