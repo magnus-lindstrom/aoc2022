@@ -1,11 +1,8 @@
-use crossterm::{cursor, terminal, QueueableCommand};
 use std::collections::HashMap;
 use std::fs;
-use std::io::{stdout, Write};
-use std::{thread, time};
 
-//const FILE_PATH: &str = "inputs/day14.txt";
-const FILE_PATH: &str = "inputs/day14_test.txt";
+const FILE_PATH: &str = "inputs/day14.txt";
+//const FILE_PATH: &str = "inputs/day14_test.txt";
 
 fn read_input(file_path: &str) -> Vec<Vec<(i32, i32)>> {
     let file_contents: String = fs::read_to_string(file_path)
@@ -58,61 +55,27 @@ fn get_cave_slice_bounds(input: &Vec<Vec<(i32, i32)>>) -> (i32, i32, i32, i32) {
 }
 
 fn draw_cave(
-    drawer: &mut Drawer,
     cave_matter: &HashMap<(i32, i32), Matter>,
     minx: i32,
     maxx: i32,
     miny: i32,
     maxy: i32,
 ) -> () {
-    let mut string: String = "".to_string();
     for y in miny..=maxy {
-        string.push_str("\n");
+        println!("");
         for x in minx..=maxx {
             if !cave_matter.contains_key(&(x, y)) {
-                string.push_str(".");
+                print!(".");
             } else if cave_matter[&(x, y)] == Matter::Rock {
-                string.push_str("#");
+                print!("#");
             } else if cave_matter[&(x, y)] == Matter::Sand {
-                string.push_str("o");
+                print!("o");
             } else if cave_matter[&(x, y)] == Matter::Hole {
-                string.push_str("+");
+                print!("+");
             }
         }
     }
-    string.push_str("");
-    drawer.draw_anew(string);
-}
-
-struct Drawer {
-    stdout: std::io::Stdout,
-}
-impl Drawer {
-    fn new() -> Drawer {
-        let mut stdout: std::io::Stdout = stdout();
-        stdout.queue(cursor::SavePosition).unwrap();
-        Drawer { stdout }
-    }
-
-    fn set_position(&mut self) -> () {
-        self.stdout.queue(cursor::SavePosition).unwrap();
-    }
-
-    fn draw_anew(&mut self, input: String) -> () {
-        self.stdout.queue(cursor::RestorePosition).unwrap();
-        self.stdout
-            .queue(terminal::Clear(terminal::ClearType::FromCursorDown))
-            .unwrap();
-
-        thread::sleep(time::Duration::from_millis(100));
-        self.stdout
-            .write_all(format!("{}: \nFOOBAR ", input).as_bytes())
-            .unwrap();
-        self.stdout.flush().unwrap();
-    }
-    fn wait_ms(&self, time_in_ms: i32) -> () {
-        thread::sleep(time::Duration::from_millis(time_in_ms as u64));
-    }
+    println!("");
 }
 
 #[derive(PartialEq)]
@@ -124,7 +87,6 @@ enum Matter {
 
 pub fn result_a() -> Result<i32, &'static str> {
     let input = read_input(FILE_PATH);
-    let mut drawer: Drawer = Drawer::new();
     let (minx, maxx, miny, maxy) = get_cave_slice_bounds(&input);
     let hole: (i32, i32) = (500, 0);
     let mut cave_matter: HashMap<(i32, i32), Matter> = HashMap::new();
@@ -150,12 +112,7 @@ pub fn result_a() -> Result<i32, &'static str> {
             cave_matter.insert(hole, Matter::Hole);
         }
     }
-    drawer.set_position();
-    for i in 1..30 {
-        drawer.draw_anew(format!("{} hello", i).to_string());
-    }
-    //return Ok(0);
-    draw_cave(&mut drawer, &cave_matter, minx, maxx, miny, maxy);
+    draw_cave(&cave_matter, minx, maxx, miny, maxy);
     for i_sand_tile in 0..std::i32::MAX {
         let mut tile_pos: (i32, i32) = hole;
         for _ in 0..std::i32::MAX {
@@ -176,15 +133,14 @@ pub fn result_a() -> Result<i32, &'static str> {
                 break;
             }
         }
-        drawer.wait_ms(100);
-        draw_cave(&mut drawer, &cave_matter, minx, maxx, miny, maxy);
+        // draw_cave(&cave_matter, minx, maxx, miny, maxy);
     }
     Err("ran to the end")
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
     let input = read_input(FILE_PATH);
-    let (_minx, _maxx, _miny, mut maxy) = get_cave_slice_bounds(&input);
+    let (minx, maxx, miny, mut maxy) = get_cave_slice_bounds(&input);
     maxy += 2;
     let hole: (i32, i32) = (500, 0);
     let mut cave_matter: HashMap<(i32, i32), Matter> = HashMap::new();
@@ -210,7 +166,7 @@ pub fn result_b() -> Result<i32, &'static str> {
             cave_matter.insert(hole, Matter::Hole);
         }
     }
-    // draw_cave(&cave_matter, minx, maxx, miny, maxy);
+    draw_cave(&cave_matter, minx, maxx, miny, maxy);
     for i_sand_tile in 1..std::i32::MAX {
         let mut tile_pos: (i32, i32) = hole;
         for _ in 0..std::i32::MAX {
