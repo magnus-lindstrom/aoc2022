@@ -1,4 +1,5 @@
-/target
+.session_cookie
 /Cargo.lock
 /inputs
-.session_cookie
+/target
+/thoughts
