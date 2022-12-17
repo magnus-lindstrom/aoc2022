@@ -44,7 +44,7 @@ pub fn result_a() -> Result<i32, &'static str> {
     let mut node_connections: HashMap<i32, Vec<i32>> = HashMap::new();
     let mut node_flows: HashMap<i32, i32> = HashMap::new();
     let mut total_flow: i32 = 0;
-    let cutoff_length = 50000;
+    let cutoff_length = 500;
 
     // first number is the total blocked volume so far. The lower the better.
     // second number is the open flow. The higher the better.
@@ -76,17 +76,10 @@ pub fn result_a() -> Result<i32, &'static str> {
         paths_to_explore.insert((total_flow, 0, new_path));
     }
 
-    let mut max_iter = 5;
-    // flow points is the air volume that could have been released - what has been released
     for _ in 0..std::i32::MAX {
         let (total_blocked_volume, current_flow, node_path) = paths_to_explore.remove_index(0);
         if paths_to_explore.len() > cutoff_length {
             paths_to_explore.drain(cutoff_length..);
-        }
-        let path_len = node_path.len();
-        if path_len == max_iter {
-            println!("path length: {}", path_len);
-            max_iter += 5;
         }
         if node_path.len() == 30 {
             return Ok(max_released_volume - total_blocked_volume);
@@ -282,26 +275,25 @@ pub fn result_b() -> Result<i32, &'static str> {
                 ));
             }
         }
-        // println!("length of possible next steps: {}", paths_to_explore.len());
     }
     Err("did not run to completion")
 }
 
-/*
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
 
-#[test]
-fn result_a_is_correct() {
-let answer = result_a().unwrap();
-assert_eq!(answer, 0);
-}
+    #[test]
+    fn result_a_is_correct() {
+        let answer = result_a().unwrap();
+        assert_eq!(answer, 1792);
+    }
 
-#[test]
-fn result_b_is_correct() {
-let answer = result_b().unwrap();
-assert_eq!(answer, 0);
+    /*
+    #[test]
+    fn result_b_is_correct() {
+    let answer = result_b().unwrap();
+    assert_eq!(answer, 0);
+    }
+    */
 }
-}
-*/
