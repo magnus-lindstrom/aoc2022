@@ -1,7 +1,6 @@
 use crate::utils;
 use sorted_vec::SortedVec;
 use std::collections::HashMap;
-use std::time::Instant;
 const FILE_PATH: &str = "inputs/day16.txt";
 //const FILE_PATH: &str = "inputs/day16_test.txt";
 
@@ -116,12 +115,12 @@ fn print_char_path(char_path: &Vec<(char, char)>) -> () {
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
-    let now = Instant::now();
     let input = utils::vector_of_string_vectors_from_file(FILE_PATH);
     // node name to flow rate and connected nodes
     let mut node_connections: HashMap<(char, char), Vec<(char, char)>> = HashMap::new();
     let mut node_flows: HashMap<(char, char), i32> = HashMap::new();
-    let cutoff_length = 50000;
+    let cutoff_length = 40000;
+    let ignore_zero_flow_paths_after_n_iter: i32 = 5;
     let time_until_collapse: usize = 26;
 
     for line in input.iter() {
@@ -148,10 +147,6 @@ pub fn result_b() -> Result<i32, &'static str> {
         total_flow += flow;
     }
     let max_released_volume = (time_until_collapse as i32 - 1) * total_flow;
-    println!(
-        "total flow: {}, max released volume: {}",
-        total_flow, max_released_volume
-    );
 
     // first number is the total blocked volume so far. The lower the better.
     // second number is the NEGATIVE open flow. The LOWER the better.
@@ -175,49 +170,11 @@ pub fn result_b() -> Result<i32, &'static str> {
         }
     }
 
-    /*
-    let mut test: SortedVec<(i32, i32, i32)> = SortedVec::new();
-    test.insert((1, -0, 0));
-    test.insert((0, 1, 0));
-    test.insert((1, -1, 0));
-    test.insert((0, 1, 1));
-    println!("test: {:?}", test);
-    return Ok(0);
-    */
-
-    let mut max_iter: i32 = 5;
     // flow points is the air volume that could have been released - what has been released
     for _ in 0..std::i32::MAX {
         let (total_blocked_volume, current_flow, ele_path, my_path) =
             paths_to_explore.remove_index(0);
         let path_len = my_path.len() as i32;
-        if path_len == max_iter {
-            println!("Time elapsed: {:.1}min.", now.elapsed().as_secs_f32() / 60.);
-            println!(
-                "path length: {}, paths_to_explore: {}",
-                path_len,
-                paths_to_explore.len()
-            );
-            println!(
-                "0:: ({},{}), 1:: ({},{}), 2:: ({},{}), n:: ({},{}) max val: ({},{})",
-                paths_to_explore[0].0,
-                paths_to_explore[0].1,
-                paths_to_explore[1].0,
-                paths_to_explore[1].1,
-                paths_to_explore[2].0,
-                paths_to_explore[2].1,
-                paths_to_explore[20].0,
-                paths_to_explore[20].1,
-                paths_to_explore.last().unwrap().0,
-                paths_to_explore.last().unwrap().1
-            );
-            max_iter += 1;
-            print!("ele path: ");
-            print_char_path(&ele_path);
-            print!("my  path: ");
-            print_char_path(&my_path);
-            println!("");
-        }
         if paths_to_explore.len() > cutoff_length {
             paths_to_explore.drain(cutoff_length..);
         }
@@ -259,7 +216,7 @@ pub fn result_b() -> Result<i32, &'static str> {
                 }
                 let new_flow = current_flow - my_added_flow - ele_added_flow; // flow is kept
                                                                               // negative
-                if path_len > 5 && new_flow == 0 {
+                if path_len > ignore_zero_flow_paths_after_n_iter && new_flow == 0 {
                     continue;
                 }
                 let mut my_node_path_plus_new_node = my_path.clone();
@@ -289,11 +246,9 @@ mod tests {
         assert_eq!(answer, 1792);
     }
 
-    /*
     #[test]
     fn result_b_is_correct() {
-    let answer = result_b().unwrap();
-    assert_eq!(answer, 0);
+        let answer = result_b().unwrap();
+        assert_eq!(answer, 2587);
     }
-    */
 }
