@@ -8,50 +8,55 @@ enum Air {
     Outside,
 }
 
-fn get_input_b() -> (
-    Vec<Vec<i32>>,
-    HashMap<Vec<i32>, Air>,
-    i32,
-    i32,
-    i32,
-    i32,
-    i32,
-    i32,
-) {
+struct Bounds {
+    minx: i32,
+    maxx: i32,
+    miny: i32,
+    maxy: i32,
+    minz: i32,
+    maxz: i32,
+}
+impl Bounds {
+    fn new() -> Bounds {
+        Bounds {
+            minx: std::i32::MAX,
+            maxx: std::i32::MIN,
+            miny: std::i32::MAX,
+            maxy: std::i32::MIN,
+            minz: std::i32::MAX,
+            maxz: std::i32::MIN,
+        }
+    }
+}
+
+fn get_input_with_bounds() -> (Vec<Vec<i32>>, HashMap<Vec<i32>, Air>, Bounds) {
     let file_contents: String = std::fs::read_to_string(FILE_PATH)
         .expect(format!("Could not read file '{}'", FILE_PATH).as_str());
-    let (mut minx, mut maxx, mut miny, mut maxy, mut minz, mut maxz) = (
-        std::i32::MAX,
-        std::i32::MIN,
-        std::i32::MAX,
-        std::i32::MIN,
-        std::i32::MAX,
-        std::i32::MIN,
-    );
+    let mut bounds: Bounds = Bounds::new();
     let mut lava: Vec<Vec<i32>> = Vec::new();
     let mut air: HashMap<Vec<i32>, Air> = HashMap::new();
     for line in file_contents.lines() {
         let v: Vec<i32> = line.split(',').map(|e| e.parse().unwrap()).collect();
-        if v[0] < minx {
-            minx = v[0];
-        } else if v[0] > maxx {
-            maxx = v[0];
+        if v[0] < bounds.minx {
+            bounds.minx = v[0];
+        } else if v[0] > bounds.maxx {
+            bounds.maxx = v[0];
         }
-        if v[1] < miny {
-            miny = v[1];
-        } else if v[1] > maxy {
-            maxy = v[1];
+        if v[1] < bounds.miny {
+            bounds.miny = v[1];
+        } else if v[1] > bounds.maxy {
+            bounds.maxy = v[1];
         }
-        if v[2] < minz {
-            minz = v[2];
-        } else if v[2] > maxz {
-            maxz = v[2];
+        if v[2] < bounds.minz {
+            bounds.minz = v[2];
+        } else if v[2] > bounds.maxz {
+            bounds.maxz = v[2];
         }
         lava.push(v);
     }
-    for x in minx..=maxx {
-        for y in miny..=maxy {
-            for z in minz..=maxz {
+    for x in bounds.minx..=bounds.maxx {
+        for y in bounds.miny..=bounds.maxy {
+            for z in bounds.minz..=bounds.maxz {
                 let point = vec![x, y, z];
                 if !lava.contains(&point) {
                     air.insert(point, Air::Inside);
@@ -60,41 +65,18 @@ fn get_input_b() -> (
         }
     }
 
-    (lava, air, minx, maxx, miny, maxy, minz, maxz)
+    (lava, air, bounds)
 }
 
-fn get_input() -> (Vec<Vec<i32>>, i32, i32, i32, i32, i32, i32) {
+fn get_input_without_bounds() -> Vec<Vec<i32>> {
     let file_contents: String = std::fs::read_to_string(FILE_PATH)
         .expect(format!("Could not read file '{}'", FILE_PATH).as_str());
-    let (mut minx, mut maxx, mut miny, mut maxy, mut minz, mut maxz) = (
-        std::i32::MAX,
-        std::i32::MIN,
-        std::i32::MAX,
-        std::i32::MIN,
-        std::i32::MAX,
-        std::i32::MIN,
-    );
     let mut output: Vec<Vec<i32>> = Vec::new();
     for line in file_contents.lines() {
         let v: Vec<i32> = line.split(',').map(|e| e.parse().unwrap()).collect();
-        if v[0] < minx {
-            minx = v[0];
-        } else if v[0] > maxx {
-            maxx = v[0];
-        }
-        if v[1] < miny {
-            miny = v[1];
-        } else if v[1] > maxy {
-            maxy = v[1];
-        }
-        if v[2] < minz {
-            minz = v[2];
-        } else if v[2] > maxz {
-            maxz = v[2];
-        }
         output.push(v);
     }
-    (output, minx, maxx, miny, maxy, minz, maxz)
+    output
 }
 
 fn is_adjacent(p1: &Vec<i32>, p2: &Vec<i32>) -> bool {
@@ -229,22 +211,23 @@ fn adjacent_to_outside_air(point: (i32, i32, i32), air: &mut HashMap<Vec<i32>, A
     false
 }
 
-fn mark_outside_air_return_if_changed(
-    air: &mut HashMap<Vec<i32>, Air>,
-    minx: i32,
-    maxx: i32,
-    miny: i32,
-    maxy: i32,
-    minz: i32,
-    maxz: i32,
-) -> bool {
+fn mark_outside_air(air: &mut HashMap<Vec<i32>, Air>, bounds: &Bounds) -> () {
+    loop {
+        let changed = mark_outside_air_return_if_changed(air, &bounds);
+        if !changed {
+            break;
+        }
+    }
+}
+
+fn mark_outside_air_return_if_changed(air: &mut HashMap<Vec<i32>, Air>, b: &Bounds) -> bool {
     let mut changed = false;
 
     // set all sides to outside air
-    let x_ranges: Vec<i32> = vec![minx, maxx];
+    let x_ranges: Vec<i32> = vec![b.minx, b.maxx];
     for x in x_ranges.into_iter() {
-        for y in miny..=maxy {
-            for z in minz..=maxz {
+        for y in b.miny..=b.maxy {
+            for z in b.minz..=b.maxz {
                 let key = vec![x, y, z];
                 if air.contains_key(&key) {
                     *air.get_mut(&key).unwrap() = Air::Outside;
@@ -252,10 +235,10 @@ fn mark_outside_air_return_if_changed(
             }
         }
     }
-    let y_ranges: Vec<i32> = vec![miny, maxy];
+    let y_ranges: Vec<i32> = vec![b.miny, b.maxy];
     for y in y_ranges.into_iter() {
-        for x in minx..=maxx {
-            for z in minz..=maxz {
+        for x in b.minx..=b.maxx {
+            for z in b.minz..=b.maxz {
                 let key = vec![x, y, z];
                 if air.contains_key(&key) {
                     *air.get_mut(&key).unwrap() = Air::Outside;
@@ -263,10 +246,10 @@ fn mark_outside_air_return_if_changed(
             }
         }
     }
-    let z_ranges: Vec<i32> = vec![minz, maxz];
+    let z_ranges: Vec<i32> = vec![b.minz, b.maxz];
     for z in z_ranges.into_iter() {
-        for x in minx..=maxx {
-            for y in miny..=maxy {
+        for x in b.minx..=b.maxx {
+            for y in b.miny..=b.maxy {
                 let key = vec![x, y, z];
                 if air.contains_key(&key) {
                     *air.get_mut(&key).unwrap() = Air::Outside;
@@ -276,9 +259,9 @@ fn mark_outside_air_return_if_changed(
     }
 
     // set inside squares to inside air, if not connected to outside air
-    for x in minx..=maxx {
-        for y in miny..=maxy {
-            for z in minz..=maxz {
+    for x in b.minx..=b.maxx {
+        for y in b.miny..=b.maxy {
+            for z in b.minz..=b.maxz {
                 let key = vec![x, y, z];
                 // println!("looking at key {:?}", key);
                 if air.contains_key(&key)
@@ -295,21 +278,14 @@ fn mark_outside_air_return_if_changed(
 }
 
 pub fn result_a() -> Result<i32, &'static str> {
-    let (mut points, _, _, _, _, _, _) = get_input();
+    let mut points = get_input_without_bounds();
     let sides: i32 = count_sides(&mut points, 0);
     Ok(sides)
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
-    let (mut lava, mut air, minx, maxx, miny, maxy, minz, maxz) = get_input_b();
-    loop {
-        let changed =
-            mark_outside_air_return_if_changed(&mut air, minx, maxx, miny, maxy, minz, maxz);
-        if !changed {
-            break;
-        }
-    }
-    //println!("{:?}", air);
+    let (mut lava, mut air, bounds) = get_input_with_bounds();
+    mark_outside_air(&mut air, &bounds);
     let sides: i32 = count_sides_considering_air(&mut lava, 0, &air);
 
     Ok(sides)
