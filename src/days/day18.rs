@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 const FILE_PATH: &str = "inputs/day18.txt";
 //const FILE_PATH: &str = "inputs/day18_test.txt";
 
@@ -29,57 +29,56 @@ impl Bounds {
     }
 }
 
-fn get_input_with_bounds() -> (Vec<Vec<i32>>, HashMap<Vec<i32>, Air>, Bounds) {
-    let file_contents: String = std::fs::read_to_string(FILE_PATH)
-        .expect(format!("Could not read file '{}'", FILE_PATH).as_str());
+fn get_bounds(lava: &Vec<&[i32]>) -> Bounds {
     let mut bounds: Bounds = Bounds::new();
-    let mut lava: Vec<Vec<i32>> = Vec::new();
-    let mut air: HashMap<Vec<i32>, Air> = HashMap::new();
-    for line in file_contents.lines() {
-        let v: Vec<i32> = line.split(',').map(|e| e.parse().unwrap()).collect();
-        if v[0] < bounds.minx {
-            bounds.minx = v[0];
-        } else if v[0] > bounds.maxx {
-            bounds.maxx = v[0];
+    for point in lava.iter() {
+        if point[0] < bounds.minx {
+            bounds.minx = point[0];
+        } else if point[0] > bounds.maxx {
+            bounds.maxx = point[0];
         }
-        if v[1] < bounds.miny {
-            bounds.miny = v[1];
-        } else if v[1] > bounds.maxy {
-            bounds.maxy = v[1];
+        if point[1] < bounds.miny {
+            bounds.miny = point[1];
+        } else if point[1] > bounds.maxy {
+            bounds.maxy = point[1];
         }
-        if v[2] < bounds.minz {
-            bounds.minz = v[2];
-        } else if v[2] > bounds.maxz {
-            bounds.maxz = v[2];
+        if point[2] < bounds.minz {
+            bounds.minz = point[2];
+        } else if point[2] > bounds.maxz {
+            bounds.maxz = point[2];
         }
-        lava.push(v);
     }
-    for x in bounds.minx..=bounds.maxx {
-        for y in bounds.miny..=bounds.maxy {
-            for z in bounds.minz..=bounds.maxz {
-                let point = vec![x, y, z];
-                if !lava.contains(&point) {
-                    air.insert(point, Air::Inside);
+    bounds
+}
+
+/*
+fn get_air(lava: &Vec<&[i32]>, b: &Bounds) -> HashMap<(i32, i32, i32), Air> {
+    let mut air: HashMap<(i32, i32, i32), Air> = HashMap::new();
+    for x in b.minx..=b.maxx {
+        for y in b.miny..=b.maxy {
+            for z in b.minz..=b.maxz {
+                if !lava.contains(&(x, y, z)) {
+                    air.insert((x, y, z), Air::Inside);
                 }
             }
         }
     }
-
-    (lava, air, bounds)
+    air
 }
+*/
 
-fn get_input_without_bounds() -> Vec<Vec<i32>> {
+fn get_lava() -> HashSet<&'static [i32]> {
     let file_contents: String = std::fs::read_to_string(FILE_PATH)
         .expect(format!("Could not read file '{}'", FILE_PATH).as_str());
-    let mut output: Vec<Vec<i32>> = Vec::new();
+    let mut lava: HashSet<&'static [i32]> = HashSet::new();
     for line in file_contents.lines() {
         let v: Vec<i32> = line.split(',').map(|e| e.parse().unwrap()).collect();
-        output.push(v);
+        lava.insert(&[v[0], v[1], v[2]]);
     }
-    output
+    lava
 }
 
-fn is_adjacent(p1: &Vec<i32>, p2: &Vec<i32>) -> bool {
+fn is_adjacent(p1: &[i32], p2: &[i32]) -> bool {
     let mut found_diff_of_one = false;
     for (p1_elem, p2_elem) in p1.iter().zip(p2.iter()) {
         let diff = p1_elem.abs_diff(*p2_elem);
@@ -96,7 +95,7 @@ fn is_adjacent(p1: &Vec<i32>, p2: &Vec<i32>) -> bool {
     true
 }
 
-fn get_sides_touching_inside_air(point: Vec<i32>, air: &HashMap<Vec<i32>, Air>) -> i32 {
+fn get_sides_touching_inside_air(point: &[i32], air: &HashMap<&[i32], Air>) -> i32 {
     let mut sides_touching_inside_air = 0;
     let (mut p1, mut p2, mut p3, mut p4, mut p5, mut p6) = (
         point.clone(),
@@ -133,10 +132,10 @@ fn get_sides_touching_inside_air(point: Vec<i32>, air: &HashMap<Vec<i32>, Air>) 
     sides_touching_inside_air
 }
 
-fn count_sides_considering_air(
-    points: &mut Vec<Vec<i32>>,
+fn count_sides_from_point_minus_inside_air(
+    points: &mut Vec<&[i32]>,
     index: usize,
-    air: &HashMap<Vec<i32>, Air>,
+    air: &HashMap<&[i32], Air>,
 ) -> i32 {
     let mut sides = 0;
     if points.is_empty() {
@@ -153,40 +152,41 @@ fn count_sides_considering_air(
         }
     }
     for i in adjacent_indeces.into_iter() {
-        sides += count_sides_considering_air(points, i, air) - 1; // -1 because they all touch this point
+        sides += count_sides_from_point_minus_inside_air(points, i, air) - 1; // -1 because they all touch this point
     }
     sides -= adjacent_cubes;
 
     sides -= get_sides_touching_inside_air(point, &air);
 
     if points.len() > 0 {
-        sides += count_sides_considering_air(points, 0, air);
+        sides += count_sides_from_point_minus_inside_air(points, 0, air);
     }
     sides
 }
 
-fn count_sides(points: &mut Vec<Vec<i32>>, index: usize) -> i32 {
+fn count_sides_from_point(points: &mut HashSet<&[i32]>, point: Option<&[i32]>) -> i32 {
     let mut sides = 0;
-    if points.is_empty() {
-        return sides;
+    if point == None {
+        point = Some(points.iter().next().unwrap());
     }
-    let point = points.remove(index);
+    let p1 = points.iter().next().unwrap();
+    points.remove(p1);
     sides += 6;
     let mut adjacent_cubes = 0;
-    let mut adjacent_indeces: Vec<usize> = Vec::new();
-    for i in 0..points.len() {
-        if is_adjacent(&point, &points[i]) {
+    let mut adjacent_points: Vec<&[i32]> = Vec::new();
+    for p2 in points.iter() {
+        if is_adjacent(&p1, &p2) {
             adjacent_cubes += 1;
-            adjacent_indeces.push(i);
+            adjacent_points.push(p2);
         }
     }
-    for i in adjacent_indeces.iter() {
-        sides += count_sides(points, *i) - 1; // -1 because they all touch this point
+    for point in adjacent_points.iter() {
+        sides += count_sides_from_point(points, Some(point)) - 1; // -1 because they all touch this point
     }
     sides -= adjacent_cubes;
 
     if points.len() > 0 {
-        sides += count_sides(points, 0);
+        sides += count_sides_from_point(points, None);
     }
     sides
 }
@@ -278,15 +278,18 @@ fn mark_outside_air_return_if_changed(air: &mut HashMap<Vec<i32>, Air>, b: &Boun
 }
 
 pub fn result_a() -> Result<i32, &'static str> {
-    let mut points = get_input_without_bounds();
-    let sides: i32 = count_sides(&mut points, 0);
+    let mut lava = get_lava();
+    let sides: i32 = count_sides_from_point(&mut lava, None);
     Ok(sides)
 }
 
+/*
 pub fn result_b() -> Result<i32, &'static str> {
-    let (mut lava, mut air, bounds) = get_input_with_bounds();
+    let mut lava = get_lava();
+    let bounds = get_bounds(&lava);
+    let mut air = get_air(&lava, &bounds);
     mark_outside_air(&mut air, &bounds);
-    let sides: i32 = count_sides_considering_air(&mut lava, 0, &air);
+    let sides: i32 = count_sides_from_point_minus_inside_air(&mut lava, 0, &air);
 
     Ok(sides)
 }
@@ -307,3 +310,4 @@ mod tests {
         assert_eq!(answer, 2458);
     }
 }
+*/
