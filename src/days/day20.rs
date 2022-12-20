@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 const FILE_PATH: &str = "inputs/day20.txt";
-//const FILE_PATH: &str = "inputs/day20_test.txt";
-//const FILE_PATH: &str = "inputs/day20_scratch.txt";
 
 fn get_new_pos_of_nr(a: i64, mut b: i64, input_len: i64) -> i64 {
     let new_place: i64;
@@ -171,21 +169,19 @@ pub fn result_b() -> Result<i64, &'static str> {
     Ok(result_sum)
 }
 
-/*
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
 
-#[test]
-fn result_a_is_correct() {
-let answer = result_a().unwrap();
-assert_eq!(answer, 0);
-}
+    #[test]
+    fn result_a_is_correct() {
+        let answer = result_a().unwrap();
+        assert_eq!(answer, 9866);
+    }
 
-#[test]
-fn result_b_is_correct() {
-let answer = result_b().unwrap();
-assert_eq!(answer, 0);
+    #[test]
+    fn result_b_is_correct() {
+        let answer = result_b().unwrap();
+        assert_eq!(answer, 12374299815791);
+    }
 }
-}
-*/
