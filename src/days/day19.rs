@@ -121,6 +121,29 @@ fn impossible_to_beat_max(
     false
 }
 
+fn got_enough_stores_and_prod_of_mat(
+    max_needed: i32,
+    production: i32,
+    storage: i32,
+    time_left: i32,
+) -> bool {
+    /*
+    println!(
+    "max needed: {}, production: {}, storage: {}, time_left: {}",
+    max_needed, production, storage, time_left
+    );
+    println!(
+    "LHS vs RHS: {} vs {}",
+    production * time_left + storage,
+    max_needed * time_left
+    );
+    */
+    if production * time_left + storage >= max_needed * time_left {
+        return true;
+    }
+    false
+}
+
 fn get_max_production_needed(
     blueprints: &HashMap<Material, HashMap<Material, i32>>,
 ) -> (i32, i32, i32) {
@@ -197,7 +220,12 @@ fn get_blueprint_max_geodes(
                 }
                 break;
             } else if robot_was_built {
-                if production[&Material::Ore] < max_ore_needed {
+                if !got_enough_stores_and_prod_of_mat(
+                    max_ore_needed,
+                    production[&Material::Ore],
+                    storage.ore,
+                    time_left,
+                ) {
                     nodes.push((
                         time_left,
                         storage.clone(),
@@ -205,7 +233,12 @@ fn get_blueprint_max_geodes(
                         production.clone(),
                     ));
                 }
-                if production[&Material::Clay] < max_clay_needed {
+                if !got_enough_stores_and_prod_of_mat(
+                    max_clay_needed,
+                    production[&Material::Clay],
+                    storage.clay,
+                    time_left,
+                ) {
                     nodes.push((
                         time_left,
                         storage.clone(),
@@ -215,7 +248,12 @@ fn get_blueprint_max_geodes(
                 }
 
                 if production[&Material::Clay] > 0
-                    && production[&Material::Obsidian] < max_obsidian_needed
+                    && !got_enough_stores_and_prod_of_mat(
+                        max_obsidian_needed,
+                        production[&Material::Obsidian],
+                        storage.obsidian,
+                        time_left,
+                    )
                 {
                     nodes.push((
                         time_left,
