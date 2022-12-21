@@ -2,6 +2,6 @@ pub mod days;
 mod utils;
 
 fn main() -> () {
-    println!("day 20 answer a:\n{}", days::day20::result_a().unwrap());
-    println!("\nday 20 answer b:\n{}", days::day20::result_b().unwrap());
+    println!("day 21 answer a:\n{}", days::day21::result_a().unwrap());
+    println!("\nday 21 answer b:\n{}", days::day21::result_b().unwrap());
 }
