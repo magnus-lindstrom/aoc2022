@@ -1,7 +1,7 @@
 use crate::utils;
 use std::collections::HashMap;
-//const FILE_PATH: &str = "inputs/day21.txt";
-const FILE_PATH: &str = "inputs/day21_test.txt";
+const FILE_PATH: &str = "inputs/day21.txt";
+//const FILE_PATH: &str = "inputs/day21_test.txt";
 
 struct Function {
     lhs: String,
@@ -30,7 +30,7 @@ impl Function {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 enum Operation {
     Addition,
     Subtraction,
@@ -66,98 +66,80 @@ fn get_rhs_nr(nr_to_produce: i64, lhs: i64, operation: &Operation) -> i64 {
     nr
 }
 
-// if nr_to_produce is None, and one of the monkeys is me, returns None
-//
-// otherwise, returns what I should yell
-fn what_should_i_yell(
+fn find_out_monkey_nr_allow_for_none(
     name: String,
     monkey_to_nr: &mut HashMap<String, i64>,
     monkey_to_function: &HashMap<String, Function>,
-    nr_to_produce: Option<i64>,
 ) -> Option<i64> {
-    if &name != "humn" && monkey_to_nr.contains_key(&name) {
+    if name == "humn" {
+        return None;
+    }
+
+    if monkey_to_nr.contains_key(&name) {
         return Some(monkey_to_nr[&name]);
     }
 
     let operation = &monkey_to_function[&name].operation;
+    let lhs_nr = find_out_monkey_nr_allow_for_none(
+        monkey_to_function[&name].lhs.clone(),
+        monkey_to_nr,
+        monkey_to_function,
+    );
+    let rhs_nr = find_out_monkey_nr_allow_for_none(
+        monkey_to_function[&name].rhs.clone(),
+        monkey_to_nr,
+        monkey_to_function,
+    );
+    if lhs_nr == None || rhs_nr == None {
+        return None;
+    }
+
+    let result: i64;
+    if operation == &Operation::Addition {
+        result = lhs_nr.unwrap() + rhs_nr.unwrap();
+    } else if operation == &Operation::Subtraction {
+        result = lhs_nr.unwrap() - rhs_nr.unwrap();
+    } else if operation == &Operation::Multiplication {
+        result = lhs_nr.unwrap() * rhs_nr.unwrap();
+    } else {
+        result = lhs_nr.unwrap() / rhs_nr.unwrap();
+    }
+    monkey_to_nr.insert(name, result);
+    Some(result)
+}
+
+fn what_should_i_yell(
+    name: String,
+    monkey_to_nr: &mut HashMap<String, i64>,
+    monkey_to_function: &HashMap<String, Function>,
+    nr_to_produce: i64,
+) -> i64 {
+    let operation = &monkey_to_function[&name].operation;
     let lhs_monkey = monkey_to_function[&name].lhs.clone();
     let rhs_monkey = monkey_to_function[&name].rhs.clone();
 
-    if nr_to_produce == None {
-        if lhs_monkey == "humn".to_string() || rhs_monkey == "humn".to_string() {
-            println!("found \"humn\"");
-            return None;
-        }
+    let lhs_nr =
+        find_out_monkey_nr_allow_for_none(lhs_monkey.clone(), monkey_to_nr, monkey_to_function);
+    let rhs_nr =
+        find_out_monkey_nr_allow_for_none(rhs_monkey.clone(), monkey_to_nr, monkey_to_function);
 
-        let lhs_nr = what_should_i_yell(lhs_monkey.clone(), monkey_to_nr, monkey_to_function, None);
-        let rhs_nr = what_should_i_yell(rhs_monkey.clone(), monkey_to_nr, monkey_to_function, None);
+    // bottom case: one of the monkeys is I
+    if lhs_monkey == "humn" {
+        let lhs_should_be: i64 = get_lhs_nr(nr_to_produce, rhs_nr.unwrap(), operation);
+        return lhs_should_be;
+    } else if rhs_monkey == "humn" {
+        let rhs_should_be: i64 = get_rhs_nr(nr_to_produce, lhs_nr.unwrap(), operation);
+        return rhs_should_be;
+    }
 
-        if lhs_nr == None || rhs_nr == None {
-            return None;
-        }
-
-        let result: i64;
-        if operation == &Operation::Addition {
-            result = lhs_nr.unwrap() + rhs_nr.unwrap();
-        } else if operation == &Operation::Subtraction {
-            result = lhs_nr.unwrap() - rhs_nr.unwrap();
-        } else if operation == &Operation::Multiplication {
-            result = lhs_nr.unwrap() * rhs_nr.unwrap();
-        } else {
-            result = lhs_nr.unwrap() / rhs_nr.unwrap();
-        }
-        monkey_to_nr.insert(name, result);
-        return Some(result);
+    if lhs_nr == None {
+        let lhs_should_be: i64 = get_lhs_nr(nr_to_produce, rhs_nr.unwrap(), operation);
+        return what_should_i_yell(lhs_monkey, monkey_to_nr, monkey_to_function, lhs_should_be);
+    } else if rhs_nr == None {
+        let rhs_should_be: i64 = get_rhs_nr(nr_to_produce, lhs_nr.unwrap(), operation);
+        return what_should_i_yell(rhs_monkey, monkey_to_nr, monkey_to_function, rhs_should_be);
     } else {
-        if lhs_monkey == "humn".to_string() {
-            let rhs_nr =
-                what_should_i_yell(rhs_monkey.clone(), monkey_to_nr, monkey_to_function, None)
-                    .unwrap();
-            let to_yell: i64 = get_lhs_nr(nr_to_produce.unwrap(), rhs_nr, operation);
-            println!("lhs is human, i should yell {}", to_yell);
-            return Some(to_yell);
-        } else if rhs_monkey == "humn".to_string() {
-            let lhs_nr =
-                what_should_i_yell(lhs_monkey.clone(), monkey_to_nr, monkey_to_function, None)
-                    .unwrap();
-            let to_yell: i64 = get_rhs_nr(nr_to_produce.unwrap(), lhs_nr, operation);
-            println!("rhs is human, i should yell {}", to_yell);
-        }
-
-        let lhs_nr = what_should_i_yell(lhs_monkey.clone(), monkey_to_nr, monkey_to_function, None);
-        let rhs_nr = what_should_i_yell(rhs_monkey.clone(), monkey_to_nr, monkey_to_function, None);
-
-        if lhs_nr == None {
-            if rhs_nr == None {
-                panic!("both should not be None");
-            }
-
-            let new_nr_to_produce: i64 =
-                get_lhs_nr(nr_to_produce.unwrap(), rhs_nr.unwrap(), operation);
-
-            return what_should_i_yell(
-                rhs_monkey.clone(),
-                monkey_to_nr,
-                monkey_to_function,
-                Some(new_nr_to_produce),
-            );
-        } else if rhs_nr == None {
-            if lhs_nr == None {
-                panic!("both should not be None");
-            }
-
-            let new_nr_to_produce: i64 =
-                get_rhs_nr(nr_to_produce.unwrap(), lhs_nr.unwrap(), operation);
-
-            return what_should_i_yell(
-                lhs_monkey.clone(),
-                monkey_to_nr,
-                monkey_to_function,
-                Some(new_nr_to_produce),
-            );
-        } else {
-            panic!("one side should be none");
-        }
+        panic!("should not get here");
     }
 }
 
@@ -191,41 +173,6 @@ fn find_out_monkey_nr(
         result = lhs_nr / rhs_nr;
     }
     monkey_to_nr.insert(name, result);
-    result
-}
-
-fn what_to_yell(
-    name: String,
-    monkey_to_nr: &mut HashMap<String, i64>,
-    monkey_to_function: &HashMap<String, Function>,
-) -> i64 {
-    if monkey_to_nr.contains_key(&name) {
-        return monkey_to_nr[&name];
-    }
-    let operation = &monkey_to_function[&name].operation;
-    let lhs_nr = find_out_monkey_nr(
-        monkey_to_function[&name].lhs.clone(),
-        monkey_to_nr,
-        monkey_to_function,
-    );
-    let rhs_nr = find_out_monkey_nr(
-        monkey_to_function[&name].rhs.clone(),
-        monkey_to_nr,
-        monkey_to_function,
-    );
-    let result: i64 = 0;
-    /*
-    if operation == &Operation::Addition {
-    result = lhs_nr + rhs_nr;
-    } else if operation == &Operation::Subtraction {
-    result = lhs_nr - rhs_nr;
-    } else if operation == &Operation::Multiplication {
-    result = lhs_nr * rhs_nr;
-    } else {
-    result = lhs_nr / rhs_nr;
-    }
-    monkey_to_nr.insert(name, result);
-    */
     result
 }
 
@@ -265,52 +212,48 @@ pub fn result_b() -> Result<i64, &'static str> {
         }
     }
 
-    let nr_of_rhs_monkey: Option<i64> = what_should_i_yell(
+    let nr_of_rhs_monkey: Option<i64> = find_out_monkey_nr_allow_for_none(
         monkey_to_function["root"].rhs.clone(),
         &mut monkey_to_nr,
         &monkey_to_function,
-        None,
     );
-    println!("\n{}", nr_of_rhs_monkey.unwrap());
-    Ok(what_should_i_yell(
+    let nr_of_lhs_monkey: Option<i64> = find_out_monkey_nr_allow_for_none(
         monkey_to_function["root"].lhs.clone(),
         &mut monkey_to_nr,
         &monkey_to_function,
-        Some(nr_of_rhs_monkey.unwrap()),
-    )
-    .unwrap())
-}
-/*
-   let nr_of_rhs_monkey: Option<i64> = what_should_i_yell(
-   "root".to_string(),
-   &mut monkey_to_nr,
-   &monkey_to_function,
-   None,
-   );
-   println!("{:?}", nr_of_rhs_monkey);
-   Ok(what_should_i_yell(
-   "root".to_string(),
-   &mut monkey_to_nr,
-   &monkey_to_function,
-   Some(nr_of_rhs_monkey.unwrap()),
-   )
-   .unwrap())
-   }
+    );
 
+    if nr_of_rhs_monkey == None {
+        return Ok(what_should_i_yell(
+            monkey_to_function["root"].rhs.clone(),
+            &mut monkey_to_nr,
+            &monkey_to_function,
+            nr_of_lhs_monkey.unwrap(),
+        ));
+    } else if nr_of_lhs_monkey == None {
+        return Ok(what_should_i_yell(
+            monkey_to_function["root"].lhs.clone(),
+            &mut monkey_to_nr,
+            &monkey_to_function,
+            nr_of_rhs_monkey.unwrap(),
+        ));
+    } else {
+        panic!("one should be none");
+    }
+}
 #[cfg(test)]
 mod tests {
-use super::*;
+    use super::*;
 
-#[test]
-fn result_a_is_correct() {
-let answer = result_a().unwrap();
-assert_eq!(answer, 0);
-}
+    #[test]
+    fn result_a_is_correct() {
+        let answer = result_a().unwrap();
+        assert_eq!(answer, 78342931359552);
+    }
 
-#[test]
-fn result_b_is_correct() {
-let answer = result_b().unwrap();
-assert_eq!(answer, 0);
+    #[test]
+    fn result_b_is_correct() {
+        let answer = result_b().unwrap();
+        assert_eq!(answer, 3296135418820);
+    }
 }
-}
-*/
