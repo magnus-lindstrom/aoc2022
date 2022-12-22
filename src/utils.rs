@@ -129,6 +129,19 @@ where
     }
     output
 }
+
+pub fn file_path_to_vec_of_strings_preserve_whitespace(file_path: &str) -> Vec<String> {
+    let file_contents: String = fs::read_to_string(file_path)
+        .expect(format!("Could not read file '{}'", file_path).as_str());
+
+    let mut output: Vec<String> = Vec::new();
+
+    for line in file_contents.lines() {
+        output.push(line.to_string());
+    }
+    return output;
+}
+
 pub fn vector_of_string_vectors_from_file(file_path: &str) -> Vec<Vec<String>> {
     /*
      * Assumes a file with whitespace-separated strings on each line.
