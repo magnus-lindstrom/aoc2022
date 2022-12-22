@@ -20,14 +20,14 @@ enum Facing {
 
 #[derive(Debug)]
 struct CubePosition {
-    tile: (i64, i64),
+    tile: (i32, i32),
     facing: Facing,
-    edges: HashMap<((i64, i64), Facing), ((i64, i64), Facing)>,
+    edges: HashMap<((i32, i32), Facing), ((i32, i32), Facing)>,
 }
 impl CubePosition {
     fn new(
-        starting_column: i64,
-        edges: HashMap<((i64, i64), Facing), ((i64, i64), Facing)>,
+        starting_column: i32,
+        edges: HashMap<((i32, i32), Facing), ((i32, i32), Facing)>,
     ) -> CubePosition {
         CubePosition {
             tile: (1, starting_column),
@@ -59,8 +59,8 @@ impl CubePosition {
         }
     }
 
-    fn take_step_return_result(&mut self, map: &HashMap<(i64, i64), Tile>) -> bool {
-        let mut next_tile: Option<(i64, i64)> = None;
+    fn take_step_return_result(&mut self, map: &HashMap<(i32, i32), Tile>) -> bool {
+        let mut next_tile: Option<(i32, i32)> = None;
         let mut next_facing = self.facing;
 
         if self.edges.contains_key(&(self.tile, self.facing)) {
@@ -92,7 +92,7 @@ impl CubePosition {
 
 #[derive(Debug)]
 struct Position {
-    tile: (i64, i64),
+    tile: (i32, i32),
     facing: Facing,
 }
 impl Position {
@@ -122,11 +122,11 @@ impl Position {
 
     fn take_step_return_result(
         &mut self,
-        map: &HashMap<(i64, i64), Tile>,
-        row_bounds: &HashMap<i64, (i64, i64)>,
-        col_bounds: &HashMap<i64, (i64, i64)>,
+        map: &HashMap<(i32, i32), Tile>,
+        row_bounds: &HashMap<i32, (i32, i32)>,
+        col_bounds: &HashMap<i32, (i32, i32)>,
     ) -> bool {
-        let mut next_tile: Option<(i64, i64)> = None;
+        let mut next_tile: Option<(i32, i32)> = None;
         if self.facing == Facing::Up {
             if self.tile.0 == col_bounds[&self.tile.1].0 {
                 next_tile = Some((col_bounds[&self.tile.1].1, self.tile.1));
@@ -164,8 +164,8 @@ impl Position {
     }
 }
 
-fn get_edges() -> HashMap<((i64, i64), Facing), ((i64, i64), Facing)> {
-    let mut edges: HashMap<((i64, i64), Facing), ((i64, i64), Facing)> = HashMap::new();
+fn get_edges() -> HashMap<((i32, i32), Facing), ((i32, i32), Facing)> {
+    let mut edges: HashMap<((i32, i32), Facing), ((i32, i32), Facing)> = HashMap::new();
 
     if SETTING == "test" {
         for (one, two) in (9..=12).zip((1..=4).rev()) {
@@ -237,8 +237,8 @@ fn get_edges() -> HashMap<((i64, i64), Facing), ((i64, i64), Facing)> {
     edges
 }
 
-fn get_starting_column(map: &HashMap<(i64, i64), Tile>) -> i64 {
-    for j in 1..std::i64::MAX {
+fn get_starting_column(map: &HashMap<(i32, i32), Tile>) -> i32 {
+    for j in 1..std::i32::MAX {
         if map[&(1, j)] == Tile::Empty {
             return j;
         }
@@ -247,11 +247,11 @@ fn get_starting_column(map: &HashMap<(i64, i64), Tile>) -> i64 {
 }
 
 fn get_map_plus_path_plus_map_bounds() -> (
-    HashMap<(i64, i64), Tile>,
+    HashMap<(i32, i32), Tile>,
     Vec<String>,
-    HashMap<i64, (i64, i64)>,
-    HashMap<i64, (i64, i64)>,
-    i64,
+    HashMap<i32, (i32, i32)>,
+    HashMap<i32, (i32, i32)>,
+    i32,
 ) {
     let input: Vec<String>;
     if SETTING == "real" {
@@ -259,9 +259,9 @@ fn get_map_plus_path_plus_map_bounds() -> (
     } else {
         input = crate::utils::file_path_to_vec_of_strings_preserve_whitespace(TEST_FILE_PATH);
     }
-    let mut map: HashMap<(i64, i64), Tile> = HashMap::new();
-    let mut row_bounds: HashMap<i64, (i64, i64)> = HashMap::new();
-    let mut col_bounds: HashMap<i64, (i64, i64)> = HashMap::new();
+    let mut map: HashMap<(i32, i32), Tile> = HashMap::new();
+    let mut row_bounds: HashMap<i32, (i32, i32)> = HashMap::new();
+    let mut col_bounds: HashMap<i32, (i32, i32)> = HashMap::new();
     let mut nr_rows = 0;
     let mut nr_cols = 0;
     let mut path_index: Option<usize> = None;
@@ -271,40 +271,40 @@ fn get_map_plus_path_plus_map_bounds() -> (
             break;
         }
         nr_rows += 1;
-        let mut row_left_bound: Option<i64> = None;
-        let mut row_right_bound: i64 = std::i64::MAX;
+        let mut row_left_bound: Option<i32> = None;
+        let mut row_right_bound: i32 = std::i32::MAX;
         for (j_ch, ch) in line.chars().enumerate() {
             if j_ch + 1 > nr_cols {
                 nr_cols = j_ch + 1;
             }
             if ch == ' ' {
-                map.insert((i_line as i64 + 1, j_ch as i64 + 1), Tile::Nothing);
+                map.insert((i_line as i32 + 1, j_ch as i32 + 1), Tile::Nothing);
             } else {
                 if row_left_bound == None {
-                    row_left_bound = Some(j_ch as i64 + 1);
+                    row_left_bound = Some(j_ch as i32 + 1);
                 }
-                row_right_bound = j_ch as i64 + 1;
+                row_right_bound = j_ch as i32 + 1;
                 if ch == '.' {
-                    map.insert((i_line as i64 + 1, j_ch as i64 + 1), Tile::Empty);
+                    map.insert((i_line as i32 + 1, j_ch as i32 + 1), Tile::Empty);
                 } else if ch == '#' {
-                    map.insert((i_line as i64 + 1, j_ch as i64 + 1), Tile::Wall);
+                    map.insert((i_line as i32 + 1, j_ch as i32 + 1), Tile::Wall);
                 } else {
                     panic!("unexpected tile read");
                 }
             }
         }
         row_bounds.insert(
-            i_line as i64 + 1,
+            i_line as i32 + 1,
             (row_left_bound.unwrap(), row_right_bound),
         );
     }
 
     for j_col in 0..nr_cols {
-        let mut col_upper_bound: Option<i64> = None;
-        let mut col_lower_bound: i64 = 0;
+        let mut col_upper_bound: Option<i32> = None;
+        let mut col_lower_bound: i32 = 0;
         for i_row in 0..nr_rows {
-            if map.contains_key(&(i_row as i64 + 1, j_col as i64 + 1))
-                && map[&(i_row as i64 + 1, j_col as i64 + 1)] != Tile::Nothing
+            if map.contains_key(&(i_row as i32 + 1, j_col as i32 + 1))
+                && map[&(i_row as i32 + 1, j_col as i32 + 1)] != Tile::Nothing
             {
                 if col_upper_bound == None {
                     col_upper_bound = Some(i_row + 1);
@@ -313,7 +313,7 @@ fn get_map_plus_path_plus_map_bounds() -> (
             }
         }
         col_bounds.insert(
-            j_col as i64 + 1,
+            j_col as i32 + 1,
             (col_upper_bound.unwrap(), col_lower_bound),
         );
     }
@@ -353,9 +353,9 @@ fn get_map_plus_path_plus_map_bounds() -> (
 
 #[allow(dead_code)]
 fn draw_pos_in_map_b(
-    map: &HashMap<(i64, i64), Tile>,
-    row_bounds: &HashMap<i64, (i64, i64)>,
-    nr_rows: i64,
+    map: &HashMap<(i32, i32), Tile>,
+    row_bounds: &HashMap<i32, (i32, i32)>,
+    nr_rows: i32,
     position: &CubePosition,
 ) -> () {
     let position_ch = match position.facing {
@@ -385,9 +385,9 @@ fn draw_pos_in_map_b(
 
 #[allow(dead_code)]
 fn draw_pos_in_map(
-    map: &HashMap<(i64, i64), Tile>,
-    row_bounds: &HashMap<i64, (i64, i64)>,
-    nr_rows: i64,
+    map: &HashMap<(i32, i32), Tile>,
+    row_bounds: &HashMap<i32, (i32, i32)>,
+    nr_rows: i32,
     position: &Position,
 ) -> () {
     let position_ch = match position.facing {
@@ -415,7 +415,7 @@ fn draw_pos_in_map(
     println!("{}", string);
 }
 
-fn get_password(position: (i64, i64), facing: Facing) -> i64 {
+fn get_password(position: (i32, i32), facing: Facing) -> i32 {
     let facing_value = match facing {
         Facing::Right => 0,
         Facing::Down => 1,
@@ -426,7 +426,7 @@ fn get_password(position: (i64, i64), facing: Facing) -> i64 {
     position.0 * 1000 + position.1 * 4 + facing_value
 }
 
-pub fn result_a() -> Result<i64, &'static str> {
+pub fn result_a() -> Result<i32, &'static str> {
     let (map, path_vec, row_bounds, col_bounds, _nr_rows) = get_map_plus_path_plus_map_bounds();
     let mut position: Position = Position {
         tile: (1, get_starting_column(&map)),
@@ -440,7 +440,7 @@ pub fn result_a() -> Result<i64, &'static str> {
         } else if instruction == "L" {
             position.turn_left();
         } else {
-            let nr_steps: i64 = instruction.parse().unwrap();
+            let nr_steps: i32 = instruction.parse().unwrap();
             for _ in 0..nr_steps {
                 let successful = position.take_step_return_result(&map, &row_bounds, &col_bounds);
                 if !successful {
@@ -453,7 +453,7 @@ pub fn result_a() -> Result<i64, &'static str> {
     Ok(get_password(position.tile, position.facing))
 }
 
-pub fn result_b() -> Result<i64, &'static str> {
+pub fn result_b() -> Result<i32, &'static str> {
     let (map, path_vec, _row_bounds, _, _nr_rows) = get_map_plus_path_plus_map_bounds();
     let edges = get_edges();
     let mut position: CubePosition = CubePosition::new(get_starting_column(&map), edges);
@@ -465,7 +465,7 @@ pub fn result_b() -> Result<i64, &'static str> {
         } else if instruction == "L" {
             position.turn_left();
         } else {
-            let nr_steps: i64 = instruction.parse().unwrap();
+            let nr_steps: i32 = instruction.parse().unwrap();
             for _ in 0..nr_steps {
                 let successful = position.take_step_return_result(&map);
                 if !successful {
