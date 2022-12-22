@@ -1,9 +1,29 @@
 use crate::utils;
 use sorted_vec::SortedVec;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 const FILE_PATH: &str = "inputs/day16.txt";
 const TEST_FILE_PATH: &str = "inputs/day16_test.txt"; // a: 1651. b: 1707
 const MODE: &str = "real"; // real or test
+
+struct Node {
+    released_pressure: i32,
+    open_flow: i32,
+    opened_valves: HashSet<(char, char)>,
+    room: (char, char),
+    prev_rooms: Vec<(char, char)>,
+    time_left: i32,
+}
+
+struct TwinNode {
+    released_pressure: i32,
+    open_flow: i32,
+    opened_valves: HashSet<(char, char)>,
+    me_room: (char, char),
+    me_prev_room: (char, char),
+    ele_room: (char, char),
+    ele_prev_room: (char, char),
+    time_left: i32,
+}
 
 fn get_input() -> (
     HashMap<(char, char), Vec<(char, char)>>,
@@ -36,30 +56,15 @@ fn get_input() -> (
             let char2: char = line[connected_name].chars().nth(1).unwrap();
             connected_node_names.push((char1, char2));
         }
-        node_flows.insert((node_name_char1, node_name_char2), flow_rate);
+        if flow_rate > 0 {
+            node_flows.insert((node_name_char1, node_name_char2), flow_rate);
+        }
         node_connections.insert((node_name_char1, node_name_char2), connected_node_names);
     }
     (node_connections, node_flows)
 }
 
-fn node_not_opened_in_either_path(
-    node: (char, char),
-    node_path_1: &Vec<(char, char)>,
-    node_path_2: &Vec<(char, char)>,
-) -> bool {
-    for i in 1..node_path_1.len() {
-        if node_path_1[i] == node && node_path_1[i - 1] == node {
-            return false;
-        }
-    }
-    for i in 1..node_path_2.len() {
-        if node_path_2[i] == node && node_path_2[i - 1] == node {
-            return false;
-        }
-    }
-    true
-}
-
+#[allow(dead_code)]
 fn last_node_not_opened_in_path(node_path: &Vec<(char, char)>) -> bool {
     for i in 1..node_path.len() {
         if node_path[i] == *node_path.last().unwrap()
@@ -71,173 +76,249 @@ fn last_node_not_opened_in_path(node_path: &Vec<(char, char)>) -> bool {
     true
 }
 
-#[allow(dead_code)]
-fn print_char_path(char_path: &Vec<(char, char)>) -> () {
-    for node in char_path.iter() {
-        print!("{}{}-", node.0, node.1);
+fn impossible_to_beat_best_b(
+    node: &TwinNode,
+    max_released_pressure: i32,
+    room_flows: &HashMap<(char, char), i32>,
+) -> bool {
+    let mut time_left = node.time_left;
+    let mut open_flow = node.open_flow;
+    let mut released_pressure = node.released_pressure;
+    // Not putting the flows in increasing order here, so not strictly true if deemed impossible.
+    // But the nodes with flows are not next to each other, so it still works.
+    let mut flows_left_to_open: Vec<i32> = Vec::new();
+    for room in room_flows.keys() {
+        if !node.opened_valves.contains(room) {
+            flows_left_to_open.push(room_flows[room]);
+        }
     }
-    println!("");
+
+    let mut me_opened_room = false;
+    let mut ele_opened_room = false;
+    while time_left > 0 {
+        released_pressure += open_flow;
+
+        if !ele_opened_room && flows_left_to_open.len() > 0 {
+            open_flow += flows_left_to_open.pop().unwrap();
+            ele_opened_room = true;
+        } else {
+            ele_opened_room = false;
+        }
+        if !me_opened_room && flows_left_to_open.len() > 0 {
+            open_flow += flows_left_to_open.pop().unwrap();
+            me_opened_room = true;
+        } else {
+            me_opened_room = false;
+        }
+        time_left -= 1;
+    }
+    if released_pressure < max_released_pressure {
+        true
+    } else {
+        false
+    }
 }
 
-/*
-fn get_pruned_connections(
-    node_connections: &mut HashMap<(char, char), Vec<(char, char)>>,
-    node_flows: HashMap<(char, char), i32>,
-) -> HashMap<(char, char), i32> {
-    let mut connections_and_step_length: HashMap<(char, char), i32>;
+fn impossible_to_beat_best_a(
+    node: &Node,
+    max_released_pressure: i32,
+    room_flows: &HashMap<(char, char), i32>,
+) -> bool {
+    let mut time_left = node.time_left;
+    let mut open_flow = node.open_flow;
+    let mut released_pressure = node.released_pressure;
+    let mut flows_left_to_open: SortedVec<i32> = SortedVec::new();
+    for room in room_flows.keys() {
+        if !node.opened_valves.contains(room) {
+            flows_left_to_open.insert(room_flows[room]);
+        }
+    }
 
-    connections_and_step_length
+    let mut opened_room = false;
+    while time_left > 0 {
+        released_pressure += open_flow;
+
+        if !opened_room && flows_left_to_open.len() > 0 {
+            open_flow += flows_left_to_open.pop().unwrap();
+            opened_room = true;
+        } else {
+            opened_room = false;
+        }
+        time_left -= 1;
+    }
+    if released_pressure < max_released_pressure {
+        true
+    } else {
+        false
+    }
 }
-*/
+
+#[allow(dead_code)]
+fn pprint_prev_rooms(prev_rooms: Vec<(char, char)>) -> String {
+    let mut string: String = "".to_string();
+    string.push(prev_rooms[0].0);
+    string.push(prev_rooms[0].1);
+    for room in prev_rooms[1..].iter() {
+        string.push_str("-");
+        string.push(room.0);
+        string.push(room.1);
+    }
+    string
+}
 
 pub fn result_a() -> Result<i32, &'static str> {
-    let (node_connections, node_flows) = get_input();
-    let cutoff_length = 500;
+    let (room_connections, room_flows) = get_input();
+    let mut max_released_pressure = std::i32::MIN;
+    let max_time: i32 = 30;
 
-    let mut total_flow: i32 = 0;
-    for flow in node_flows.values() {
-        total_flow += flow;
-    }
-    let max_released_volume = 29 * total_flow;
-    let aa_connections = &node_connections[&('A', 'A')];
+    let aa_connections = &room_connections[&('A', 'A')];
 
-    // first number is the total blocked volume so far. The lower the better.
-    // second number is the open flow. The higher the better.
-    // third element, the vector, is the path taken.
-    let mut paths_to_explore: SortedVec<(i32, i32, Vec<(char, char)>)> = SortedVec::new();
+    let mut nodes_to_explore: Vec<Node> = Vec::new();
     for node in aa_connections.into_iter() {
-        paths_to_explore.insert((total_flow, 0, vec![*node]));
+        nodes_to_explore.push(Node {
+            released_pressure: 0,
+            open_flow: 0,
+            opened_valves: HashSet::new(),
+            room: *node,
+            prev_rooms: vec![('A', 'A')],
+            time_left: max_time - 1, // first minute spent moving to this node
+        });
     }
 
-    for _ in 0..std::i32::MAX {
-        let (total_blocked_volume, current_flow, node_path) = paths_to_explore.remove_index(0);
-        if paths_to_explore.len() > cutoff_length {
-            paths_to_explore.drain(cutoff_length..);
+    while nodes_to_explore.len() > 0 {
+        let node = nodes_to_explore.pop().unwrap();
+        if node.time_left == 0 {
+            if node.released_pressure > max_released_pressure {
+                max_released_pressure = node.released_pressure;
+            }
+            continue;
         }
-        if node_path.len() == 29 {
-            return Ok(max_released_volume - total_blocked_volume);
+
+        if impossible_to_beat_best_a(&node, max_released_pressure, &room_flows) {
+            continue;
         }
-        for node in &node_connections[node_path.last().unwrap()] {
-            let mut node_path_plus_new_node = node_path.clone();
-            node_path_plus_new_node.push(*node);
-            paths_to_explore.insert((
-                total_blocked_volume + (total_flow - current_flow),
-                current_flow,
-                node_path_plus_new_node,
-            ));
+
+        for connected_room in &room_connections[&node.room] {
+            if connected_room == node.prev_rooms.last().unwrap() {
+                continue;
+            }
+            let mut prev_rooms = node.prev_rooms.clone();
+            prev_rooms.push(node.room);
+            nodes_to_explore.push(Node {
+                released_pressure: node.released_pressure + node.open_flow,
+                open_flow: node.open_flow,
+                opened_valves: node.opened_valves.clone(),
+                room: *connected_room,
+                prev_rooms,
+                time_left: node.time_left - 1,
+            });
         }
-        if node_flows[node_path.last().unwrap()] > 0 && last_node_not_opened_in_path(&node_path) {
-            let mut node_path_plus_new_node = node_path.clone();
-            node_path_plus_new_node.push(*node_path.last().unwrap());
-            let new_flow = current_flow + node_flows[node_path.last().unwrap()];
-            paths_to_explore.insert((
-                total_blocked_volume + (total_flow - new_flow),
-                new_flow,
-                node_path_plus_new_node,
-            ));
+
+        // add node with current room opened
+        if !node.opened_valves.contains(&node.room) && room_flows.contains_key(&node.room) {
+            let mut new_opened_valves = node.opened_valves.clone();
+            new_opened_valves.insert(node.room);
+            let mut prev_rooms = node.prev_rooms.clone();
+            prev_rooms.push(node.room);
+            nodes_to_explore.push(Node {
+                released_pressure: node.released_pressure + node.open_flow,
+                open_flow: node.open_flow + room_flows[&node.room],
+                opened_valves: new_opened_valves,
+                room: node.room,
+                prev_rooms,
+                time_left: node.time_left - 1,
+            });
         }
     }
-    Err("did not run to completion")
+    Ok(max_released_pressure)
 }
 
 pub fn result_b() -> Result<i32, &'static str> {
-    let (node_connections, node_flows) = get_input();
-    let cutoff_length = 40000;
-    let ignore_zero_flow_paths_after_n_iter: i32 = 5;
-    let time_until_collapse: usize = 26;
+    let (room_connections, room_flows) = get_input();
+    let mut max_released_pressure = std::i32::MIN;
+    let max_time: i32 = 26;
 
-    let mut total_flow: i32 = 0;
-    for flow in node_flows.values() {
-        total_flow += flow;
-    }
-    let max_released_volume = (time_until_collapse as i32 - 1) * total_flow;
+    let aa_connections = &room_connections[&('A', 'A')];
 
-    // first number is the total blocked volume so far. The lower the better.
-    // second number is the NEGATIVE open flow. The LOWER the better.
-    // third element, the first vector, is the path taken of me.
-    // fourth element, the second vector, is the path taken of me.
-    let mut paths_to_explore: SortedVec<(i32, i32, Vec<(char, char)>, Vec<(char, char)>)> =
-        SortedVec::new();
-    let aa_connections = &node_connections[&('A', 'A')];
-    let mut elephant_possibilities: Vec<(char, char)> = Vec::new();
-    let mut my_possibilities: Vec<(char, char)> = Vec::new();
-    for node in aa_connections.into_iter() {
-        my_possibilities.push(*node);
-        elephant_possibilities.push(*node);
-    }
-    for my_pos in my_possibilities.iter() {
-        for ele_pos in elephant_possibilities.iter() {
-            let my_path = vec![('A', 'A'), *my_pos];
-            let ele_path = vec![('A', 'A'), *ele_pos];
-            // starting node has no flow
-            paths_to_explore.insert((total_flow, 0, my_path, ele_path));
+    let mut nodes_to_explore: Vec<TwinNode> = Vec::new();
+    for me_node in aa_connections.iter() {
+        for ele_node in aa_connections.iter() {
+            nodes_to_explore.push(TwinNode {
+                released_pressure: 0,
+                open_flow: 0,
+                opened_valves: HashSet::new(),
+                me_room: *me_node,
+                me_prev_room: ('A', 'A'),
+                ele_room: *ele_node,
+                ele_prev_room: ('A', 'A'),
+                time_left: max_time - 1, // first minute spent moving to this node
+            });
         }
     }
 
-    // flow points is the air volume that could have been released - what has been released
-    for _ in 0..std::i32::MAX {
-        let (total_blocked_volume, current_flow, ele_path, my_path) =
-            paths_to_explore.remove_index(0);
-        let path_len = my_path.len() as i32;
-        if paths_to_explore.len() > cutoff_length {
-            paths_to_explore.drain(cutoff_length..);
-        }
-        if my_path.len() == time_until_collapse {
-            return Ok(max_released_volume - total_blocked_volume);
+    while nodes_to_explore.len() > 0 {
+        let node = nodes_to_explore.pop().unwrap();
+        if node.time_left == 0 {
+            if node.released_pressure > max_released_pressure {
+                max_released_pressure = node.released_pressure;
+                //println!("{}", max_released_pressure);
+            }
+            continue;
         }
 
-        let mut elephant_possibilities_with_additional_flow: Vec<((char, char), i32)> = Vec::new();
-        for node in &node_connections[ele_path.last().unwrap()] {
-            elephant_possibilities_with_additional_flow.push((*node, 0));
-        }
-        if node_flows[ele_path.last().unwrap()] > 0
-            && node_not_opened_in_either_path(*ele_path.last().unwrap(), &my_path, &ele_path)
-        {
-            elephant_possibilities_with_additional_flow.push((
-                *ele_path.last().unwrap(),
-                node_flows[ele_path.last().unwrap()],
-            ));
+        if impossible_to_beat_best_b(&node, max_released_pressure, &room_flows) {
+            continue;
         }
 
-        let mut my_possibilities_with_additional_flow: Vec<((char, char), i32)> = Vec::new();
-        for node in &node_connections[my_path.last().unwrap()] {
-            my_possibilities_with_additional_flow.push((*node, 0));
+        let mut me_possible_rooms_and_flows: Vec<((char, char), i32)> = Vec::new();
+        let mut ele_possible_rooms_and_flows: Vec<((char, char), i32)> = Vec::new();
+        for me_connected_room in &room_connections[&node.me_room] {
+            if *me_connected_room == node.me_prev_room {
+                continue;
+            }
+            me_possible_rooms_and_flows.push((*me_connected_room, 0));
         }
-        if node_flows[my_path.last().unwrap()] > 0
-            && node_not_opened_in_either_path(*my_path.last().unwrap(), &my_path, &ele_path)
-        {
-            my_possibilities_with_additional_flow.push((
-                *my_path.last().unwrap(),
-                node_flows[my_path.last().unwrap()],
-            ));
+        for ele_connected_room in &room_connections[&node.ele_room] {
+            if *ele_connected_room == node.ele_prev_room {
+                continue;
+            }
+            ele_possible_rooms_and_flows.push((*ele_connected_room, 0));
         }
 
-        for (my_pos, my_added_flow) in my_possibilities_with_additional_flow.iter() {
-            for (ele_pos, ele_added_flow) in elephant_possibilities_with_additional_flow.iter() {
-                // both I and the elephant can not open the same valve at the same time.
-                if my_added_flow > &0 && my_added_flow == ele_added_flow {
-                    continue;
+        // add node with current room opened
+        if !node.opened_valves.contains(&node.me_room) && room_flows.contains_key(&node.me_room) {
+            me_possible_rooms_and_flows.push((node.me_room, room_flows[&node.me_room]));
+        }
+        if !node.opened_valves.contains(&node.ele_room) && room_flows.contains_key(&node.ele_room) {
+            ele_possible_rooms_and_flows.push((node.ele_room, room_flows[&node.ele_room]));
+        }
+
+        for (me_room, me_flow) in me_possible_rooms_and_flows.iter() {
+            for (ele_room, ele_flow) in ele_possible_rooms_and_flows.iter() {
+                if me_room == ele_room && me_flow > &0 {
+                    continue; // both agents trying to open same valve
                 }
-                let new_flow = current_flow - my_added_flow - ele_added_flow; // flow is kept
-                                                                              // negative
-                if path_len > ignore_zero_flow_paths_after_n_iter && new_flow == 0 {
-                    continue;
+                let mut new_opened_valves = node.opened_valves.clone();
+                if *me_flow > 0 && !node.opened_valves.contains(me_room) {
+                    new_opened_valves.insert(*me_room);
                 }
-                let mut my_node_path_plus_new_node = my_path.clone();
-                my_node_path_plus_new_node.push(*my_pos);
-                let mut ele_node_path_plus_new_node = ele_path.clone();
-                ele_node_path_plus_new_node.push(*ele_pos);
-
-                paths_to_explore.insert((
-                    total_blocked_volume + total_flow + new_flow,
-                    new_flow,
-                    ele_node_path_plus_new_node,
-                    my_node_path_plus_new_node,
-                ));
+                if *ele_flow > 0 && !node.opened_valves.contains(ele_room) {
+                    new_opened_valves.insert(*ele_room);
+                }
+                nodes_to_explore.push(TwinNode {
+                    released_pressure: node.released_pressure + node.open_flow,
+                    open_flow: node.open_flow + me_flow + ele_flow,
+                    opened_valves: new_opened_valves,
+                    me_room: *me_room,
+                    ele_room: *ele_room,
+                    me_prev_room: node.me_room,
+                    ele_prev_room: node.ele_room,
+                    time_left: node.time_left - 1,
+                });
             }
         }
     }
-    Err("did not run to completion")
+    Ok(max_released_pressure)
 }
 
 #[cfg(test)]
@@ -245,13 +326,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn result_a_is_correct() {
+    fn a_is_correct() {
         let answer = result_a().unwrap();
         assert_eq!(answer, 1792);
     }
 
     #[test]
-    fn result_b_is_correct() {
+    fn b_is_correct() {
         let answer = result_b().unwrap();
         assert_eq!(answer, 2587);
     }

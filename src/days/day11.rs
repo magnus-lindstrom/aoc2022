@@ -217,13 +217,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn result_a_is_correct() {
+    fn a_is_correct() {
         let answer = result_a().unwrap();
         assert_eq!(answer, 66124);
     }
 
     #[test]
-    fn result_b_is_correct() {
+    fn b_is_correct() {
         let answer = result_b().unwrap();
         assert_eq!(answer, 19309892877);
     }

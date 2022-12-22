@@ -190,13 +190,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn result_a_is_correct() {
+    fn a_is_correct() {
         let answer = result_a();
         assert_eq!(answer, Ok(14375));
     }
 
     #[test]
-    fn result_b_is_correct() {
+    fn b_is_correct() {
         let answer = result_b();
         assert_eq!(answer, Ok(10274));
     }
