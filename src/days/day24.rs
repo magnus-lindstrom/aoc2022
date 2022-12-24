@@ -137,12 +137,8 @@ fn get_valid_positions(height: i32, width: i32) -> HashSet<(i32, i32)> {
     positions
 }
 
-fn manhattan_dist(a: (i32, i32), b: (i32, i32)) -> u32 {
-    a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
-}
-
 fn impossible_to_beat_best(pos: (i32, i32), end: (i32, i32), t: i32, best_yet: i32) -> bool {
-    let dist_to_end = 2 * manhattan_dist(pos, end);
+    let dist_to_end = 2 * crate::utils::manhattan_dist(pos, end);
     if t + dist_to_end as i32 > best_yet {
         true
     } else {

@@ -30,6 +30,11 @@ where
     s.parse().unwrap()
 }
 
+pub fn manhattan_dist(a: (i32, i32), b: (i32, i32)) -> u32 {
+    a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
+}
+
+
 /// assumes that lines come in pairs, separated by a blank line
 pub fn file_path_to_vec_of_vec_of_lines_separated_by_blanks(file_path: &str) -> Vec<Vec<String>> {
     let mut output: Vec<Vec<String>> = Vec::new();

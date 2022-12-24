@@ -3,10 +3,6 @@ use std::collections::{HashMap, HashSet};
 const FILE_PATH: &str = "inputs/day15.txt";
 const TEST_FILE_PATH: &str = "inputs/day15_test.txt";
 
-fn manhattan_dist(a: (i32, i32), b: (i32, i32)) -> u32 {
-    a.0.abs_diff(b.0) + a.1.abs_diff(b.1)
-}
-
 fn get_input(file_path: &str) -> (HashMap<(i32, i32), u32>, HashSet<(i32, i32)>) {
     let input = utils::vector_of_string_vectors_from_file(file_path);
     let mut sensors: HashMap<(i32, i32), u32> = HashMap::new();
@@ -29,7 +25,7 @@ fn get_input(file_path: &str) -> (HashMap<(i32, i32), u32>, HashSet<(i32, i32)>)
             .unwrap();
         let y_beacon: i32 = line[9].trim_start_matches(&['y', '=']).parse().unwrap();
 
-        let dist_to_beacon = manhattan_dist((x_sensor, y_sensor), (x_beacon, y_beacon));
+        let dist_to_beacon = utils::manhattan_dist((x_sensor, y_sensor), (x_beacon, y_beacon));
 
         sensors.insert((x_sensor, y_sensor), dist_to_beacon);
         beacons.insert((x_beacon, y_beacon));
@@ -39,7 +35,7 @@ fn get_input(file_path: &str) -> (HashMap<(i32, i32), u32>, HashSet<(i32, i32)>)
 
 fn in_area_of_any_sensor(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) -> bool {
     for sensor in sensors.keys().into_iter() {
-        let dist_to_sensor = manhattan_dist(point, *sensor);
+        let dist_to_sensor = utils::manhattan_dist(point, *sensor);
         if dist_to_sensor <= sensors[sensor] {
             return true;
         }
@@ -50,7 +46,7 @@ fn in_area_of_any_sensor(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) 
 fn dist_to_closest_sensor_area(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) -> u32 {
     let mut closest: u32 = std::u32::MAX;
     for sensor in sensors.keys().into_iter() {
-        let dist_to_sensor = manhattan_dist(point, *sensor);
+        let dist_to_sensor = utils::manhattan_dist(point, *sensor);
         let dist_to_area = dist_to_sensor - sensors[sensor];
         if dist_to_area < closest {
             closest = dist_to_area;
@@ -71,7 +67,7 @@ fn all_sensors_are_behind(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>)
 fn get_max_leap_length(point: (i32, i32), sensors: &HashMap<(i32, i32), u32>) -> u32 {
     let mut max_leap_len: u32 = 0;
     for sensor in sensors.keys().into_iter() {
-        let dist_to_sensor = manhattan_dist(point, *sensor);
+        let dist_to_sensor = utils::manhattan_dist(point, *sensor);
         let sensor_area_side_len = sensors[sensor];
         if dist_to_sensor > sensor_area_side_len {
             continue;
